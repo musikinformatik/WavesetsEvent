@@ -1,43 +1,4 @@
 
-
-
-a = Signal.rand(1000, 0, 1.0);
-
-b = a.copy;
-
-
-a == b
-
-Wavesets
-
-BasicWavesets
-
-newFrom
-
-
-a = SoundFileToSignal.read("/Volumes/data/archiv/ton/count.aiff");
-
-a = Wavesets2.read("/Volumes/data/archiv/ton/count.aiff");
-
-x = a.asBuffer(s);
-
-x.numFrames
-
-x.play
-
-a = Buffer.read(s, "/Volumes/data/archiv/ton/count.aiff");
-
-b = Wavesets2.new.fromBuffer(a);
-
-x = Buffer.alloc(s, a.numFrames);
-b.toBuffer(x);
-
-x.play
-
-b.xings
-
-readChannel
-
 s.boot;
 w = WavesetsBuffer.new.readChannel("/Volumes/data/archiv/ton/count.aiff");
 
