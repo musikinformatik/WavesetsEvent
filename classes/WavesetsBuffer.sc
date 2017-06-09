@@ -36,7 +36,9 @@ WavesetsBuffer : Wavesets2 {
 		buffer = Buffer.readChannel(server ? Server.default, path, startFrame, numFrames, channels: channel.asArray.keep(1), action: finish);
 	}
 
+
 	fromBuffer { |buffer, onComplete|
+		// should we copy buffer?
 		this.setBuffer(buffer, onComplete)
 	}
 
@@ -50,7 +52,16 @@ WavesetsBuffer : Wavesets2 {
 		signal = nil;
 	}
 
-	sampleRate { ^buffer.sampleRate }
+	server { ^buffer.server }
+
+	toBuffer { |buffer, onComplete|
+		^this.shouldNotImplement(thisMethod)
+	}
+
+	asBuffer { |server, onComplete|
+		if(server != buffer.server) { Error("can't copy waveset to another server").throw };
+		^buffer
+	}
 
 
 	*asEvent { |inevent|
@@ -88,6 +99,10 @@ WavesetsBuffer : Wavesets2 {
 			~instrument = if(~rate2.notNil) { \wvst1gl } { \wvst0 };
 		};
 		^inevent
+	}
+
+	makeEvent { |start=0, num, end, rate=1, rate2, legato, wsamp, useFrac|
+		^this.asEvent((start: start, end: end, num: num, rate: rate, rate2: rate2, legato: legato, wsamp: wsamp, useFrac:useFrac))
 	}
 
 	// backwards compatibility

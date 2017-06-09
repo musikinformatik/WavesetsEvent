@@ -17,6 +17,7 @@ Wavesets2 {
 
 	numFrames { ^signal.size }
 	numXings { ^xings.size }
+	size { ^xings.size }
 
 	fromBuffer { |buffer, onComplete|
 		buffer.loadToFloatArray(0, -1, { |array|
@@ -45,13 +46,13 @@ Wavesets2 {
 
 	maximumAmp { |index, length=1|
 		var maxItem = 0;
-		length.do { |i| maxItem = max(maxItem, amps[index + i] ? 0) };
+		if(length == 1) { ^amps[index] ? 0.0 };
+		length.do { |i| maxItem = max(maxItem, amps[index + i] ? 0.0) };
 		^maxItem
 	}
 
-	sampleRate {
-		^Server.default.options.sampleRate
-	}
+	sampleRate { ^this.server.options.sampleRate ? 44100 }
+	server { ^Server.default }
 
 	plot { |index = 0, length = 1|
 		var data = this.frameFor(index, length, false).postln;
@@ -69,7 +70,7 @@ Wavesets2 {
 
 	// the interesting bit
 
-	analyse {
+	analyse { |minLength = 10|
 		//	var chunkSize = 400, pause = 0.01;	// not used yet
 		xings = Array.new;
 		amps = Array.new;
@@ -79,7 +80,7 @@ Wavesets2 {
 		minima = Array.new; 	//
 		"%: Analysing ...".format(this.class).inform;
 
-		this.analyseFromTo;
+		this.analyseFromTo(minLength);
 		this.calcAverages;
 		"\t ... done. (% xings)".format(xings.size).inform;
 	}
@@ -120,7 +121,7 @@ Wavesets2 {
 
 				// lin interpol for fractional crossings
 				frac = prevSample / (prevSample - thisSample);
-				fracXings = fracXings.add( i - 1 + frac );
+				fracXings = fracXings.add(i - 1 + frac);
 
 				// reset vars for next waveset
 				maxSamp = 0.0;
@@ -132,7 +133,7 @@ Wavesets2 {
 			if(thisSample > maxSamp) { maxSamp = thisSample; maxAmpIndex = i };
 			if(thisSample < minSamp) { minSamp = thisSample; minAmpIndex = i };
 			prevSample = thisSample;
-		};
+		}
 	}
 
 	// basic statistics
@@ -155,7 +156,7 @@ Wavesets2 {
 
 			avgAmp = amps.sum / numXings;
 			sqrAvgAmp = (amps.squared.sum / numXings).sqrt;
-		};
+		}
 	}
 
 	// peak detection on amplitudes
