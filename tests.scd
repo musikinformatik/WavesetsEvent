@@ -18,6 +18,11 @@ WavesetsBuffer.all.at(\x).makeEvent;
 WavesetsBuffer.all.at(\x).makeEvent(10, 800).play;
 
 
+w = WavesetsBuffer.all.at(\y);
+
+w.nextCrossing(891)
+w.nearestCrossing(891)
+
 (
 Pdef(\x,
 	Pws(

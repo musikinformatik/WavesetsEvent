@@ -215,6 +215,20 @@ Wavesets2 {
 		^peakIdxs
 	}
 
+	nextCrossing { |frame|
+		^xings[xings.indexOfGreaterThan(frame)]
+	}
+
+	nearestCrossing { |frame|
+		var index = xings.indexOfGreaterThan(frame);
+		var prev, next;
+		if(index.isNil) { ^nil };
+		next = xings[index];
+		prev = xings[index - 1];
+		if(prev.isNil) { ^next };
+		^if((frame - prev) < (next - frame)) { prev } { next };
+	}
+
 
 
 	// identity
