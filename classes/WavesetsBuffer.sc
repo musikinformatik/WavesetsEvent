@@ -129,7 +129,7 @@ WavesetsBuffer : Wavesets2 {
 			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
 
 			OffsetOut.ar(out, Pan2.ar(snd, pan));
-		}, \ir.dup(8)).add;
+		}, \ir.dup(9)).add;
 
 		SynthDef(\wvst1gl, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, rate2 = 1, sustain = 1,
 			amp = 0.1, pan, interpolation = 2 |
@@ -139,7 +139,7 @@ WavesetsBuffer : Wavesets2 {
 			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
 
 			OffsetOut.ar(out, Pan2.ar(snd, pan));
-		}, \ir.dup(8)).add;
+		}, \ir.dup(10)).add;
 
 	}
 
