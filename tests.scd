@@ -1,20 +1,22 @@
 
 s.boot;
-w = WavesetsBuffer.new.readChannel("/Volumes/data/archiv/ton/count.aiff");
+w = WavesetsBuffer.new.readChannel(Platform.resourceDir +/+ "sounds/a11wlk01.wav");
 
+BufRd
 
 w.plot(6, 100);
 
 s.boot;
-WavesetsBuffer.read("/Volumes/data/archiv/ton/count.aiff").add(\x);
-WavesetsBuffer.read("/Volumes/data/archiv/ton/Rasierer/Rasierer Aufnahmen Athen 2016/STE-002.wav").add(\y);
+WavesetsBuffer.read(Platform.resourceDir +/+ "sounds/a11wlk01.wav").add(\x);
+WavesetsBuffer.read(Platform.resourceDir +/+ "sounds/a11wlk01.wav").add(\y);
 
 WavesetsBuffer.prepareSynthDefs;
 
 WavesetsBuffer.all.at(\y).buffer
 
+WavesetsBuffer.all.at(\x).makeEvent;
+WavesetsBuffer.all.at(\x).makeEvent(10, 800).play;
 
-readChannel
 
 (
 Pdef(\x,
@@ -23,6 +25,21 @@ Pdef(\x,
 			\start, Pseries(0, 30, 100),
 			\num, 200,
 			\legato, 1.5,
+			\wsamp, 1,
+			\name, \y
+		)
+	)
+).play;
+)
+
+
+(
+Pdef(\x,
+	Pws(
+		Pbind(
+			\start, Pbrown(0, WavesetsBuffer.all.at(\y).numXings, 30),
+			\num, Pbrown(5, 40, 1),
+			\legato, 1.0,
 			\wsamp, 1,
 			\name, \y
 		)
