@@ -6,19 +6,13 @@ todo: global cache like in the original Wavesets
 */
 
 
-WavesetsBuffer : Wavesets2 {
+WavesetsBuffer {
 	classvar <all;
 
-	var <buffer;
+	var <buffer, <wavesets;
 
 	*initClass {
 		all = IdentityDictionary.new
-	}
-
-	add { |name|
-		var old = all.at(name);
-		old.free;
-		all.put(name, this)
 	}
 
 	*read { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server|
@@ -36,20 +30,20 @@ WavesetsBuffer : Wavesets2 {
 		buffer = Buffer.readChannel(server ? Server.default, path, startFrame, numFrames, channels: channel.asArray.keep(1), action: finish);
 	}
 
-
-	fromBuffer { |buffer, onComplete|
-		// should we copy buffer?
-		this.setBuffer(buffer, onComplete)
+	add { |name|
+		var old = all.at(name);
+		old.free;
+		all.put(name, this)
 	}
 
 	setBuffer { |argBuffer, onComplete|
-		super.fromBuffer(argBuffer, onComplete);
+		wavesets = Wavesets2.new.fromBuffer(argBuffer, onComplete);
 		buffer = argBuffer;
 	}
 
 	free {
 		buffer.free;
-		signal = nil;
+		wavesets = nil;
 	}
 
 	server { ^buffer.server }
@@ -66,7 +60,7 @@ WavesetsBuffer : Wavesets2 {
 
 	*asEvent { |inevent|
 		var wavesets = all.at(inevent.at(\name));
-		if(wavesets.isNil) { "no wavesets with this name: %".format(wavesets).warn; ^nil };
+		if(wavesets.isNil) { "no wavesets with this name: %".format(inevent.at(\name)).warn; ^nil };
 		^wavesets.asEvent(inevent)
 	}
 
@@ -82,12 +76,12 @@ WavesetsBuffer : Wavesets2 {
 			numWs = max(numWs.asInteger, 1);
 			startWs = startWs.asInteger;
 
-			#startFrame, numFrames = this.frameFor(startWs, numWs, ~useFrac ? true);
+			#startFrame, numFrames = wavesets.frameFor(startWs, numWs, ~useFrac ? true);
 			sustain1 = numFrames / buffer.sampleRate;
 
 			~startFrame = startFrame;
 			~numFrames = numFrames;
-			~amp = if(~wsamp.isNil) { 1.0 } { ~amp =  ~wsamp / this.maximumAmp(startWs, numWs) };
+			~amp = if(~wsamp.isNil) { 1.0 } { ~amp =  ~wsamp / wavesets.maximumAmp(startWs, numWs) };
 			~rate = ~rate ? 1.0;
 
 			~sustain = sustain1 / ~rate * (~repeats ? 1);
@@ -110,14 +104,18 @@ WavesetsBuffer : Wavesets2 {
 		^this.asEvent((start: startWs, length: numWs, repeats: repeats, rate: playRate, useFrac: useFrac))
 	}
 
+	plot { |index = 0, length = 1|
+		^wavesets.plot(index, length, buffer.sampleRate)
+	}
+
 	// identity
 
 	== { |that|
-		^this.compareObject(that, #[\signal, \buffer])
+		^this.compareObject(that, #[\wavesets, \buffer])
 	}
 
 	hash {
-		^this.instVarHash(#[\signal, \buffer])
+		^this.instVarHash(#[\wavesets, \buffer])
 	}
 
 

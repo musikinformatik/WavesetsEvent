@@ -10,14 +10,9 @@ Wavesets2 {
 	var <minAmp, <maxAmp, <avgAmp, <sqrAvgAmp;
 
 
-	signal_ { |sig|
-		signal = sig;
-		this.analyse;
+	*fromBuffer { |buffer, onComplete|
+		^this.new.fromBuffer(buffer, onComplete)
 	}
-
-	numFrames { ^signal.size }
-	numXings { ^xings.size }
-	size { ^xings.size }
 
 	fromBuffer { |buffer, onComplete|
 		buffer.loadToFloatArray(0, -1, { |array|
@@ -33,6 +28,15 @@ Wavesets2 {
 	asBuffer { |server, onComplete|
 		^Buffer.loadCollection(server, signal.asArray, numChannels: 1, action: onComplete)
 	}
+
+	signal_ { |sig|
+		signal = sig;
+		this.analyse;
+	}
+
+	numFrames { ^signal.size }
+	numXings { ^xings.size }
+	size { ^xings.size }
 
 	frameFor { arg startWs, numWs = 1, useFrac = true;
 
@@ -51,14 +55,11 @@ Wavesets2 {
 		^maxItem
 	}
 
-	sampleRate { ^this.server.options.sampleRate ? 44100 }
-	server { ^Server.default }
-
-	plot { |index = 0, length = 1|
+	plot { |index = 0, length = 1, sampleRate|
 		var data = this.frameFor(index, length, false).postln;
 		var segment = signal.copyRange(data[0], data[0] + data[1] - 1);
 		var peak = max(segment.maxItem, segment.minItem.abs);
-		var sustain = (data[1] - data[0] / this.sampleRate).round(0.000001);
+		var sustain = (data[1] - data[0] / (sampleRate ? Server.default.sampleRate ? 44100)).round(0.000001);
 		segment.plot(
 			"Waveset: index %, length %, sustain %".format(index, length, sustain),
 			minval: peak.neg,
@@ -231,7 +232,7 @@ Wavesets2 {
 
 
 
-	// identity
+	// equality
 
 	== { |that|
 		^this.compareObject(that, #[\signal])
