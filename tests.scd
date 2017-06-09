@@ -2,7 +2,6 @@
 s.boot;
 w = WavesetsBuffer.new.readChannel(Platform.resourceDir +/+ "sounds/a11wlk01.wav");
 
-BufRd
 
 w.plot(6, 100);
 
@@ -16,6 +15,8 @@ WavesetsBuffer.all.at(\y).buffer
 
 WavesetsBuffer.all.at(\x).makeEvent;
 WavesetsBuffer.all.at(\x).makeEvent(10, 800).play;
+
+WavesetsBuffer.all.at(\x) == WavesetsBuffer.all.at(\y)
 
 
 w = WavesetsBuffer.all.at(\y);

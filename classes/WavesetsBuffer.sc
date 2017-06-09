@@ -108,7 +108,7 @@ WavesetsBuffer {
 		^wavesets.plot(index, length, buffer.sampleRate)
 	}
 
-	// identity
+	// equality
 
 	== { |that|
 		^this.compareObject(that, #[\wavesets, \buffer])
