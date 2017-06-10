@@ -59,9 +59,10 @@ WavesetsBuffer {
 
 
 	*asEvent { |inevent|
-		var wavesets = all.at(inevent.at(\name));
-		if(wavesets.isNil) { "no wavesets with this name: %".format(inevent.at(\name)).warn; ^nil };
-		^wavesets.asEvent(inevent)
+		var item = all.at(inevent.at(\name));
+		if(item.isNil) { "no wavesets with this name: %".format(inevent.at(\name)).warn; ^nil };
+		if(item.wavesets.isNil) { "wavesets not initialised: %".format(inevent.at(\name)).warn; ^nil };
+		^item.asEvent(inevent)
 	}
 
 	asEvent { |inevent|
