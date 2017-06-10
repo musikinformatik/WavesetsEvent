@@ -69,35 +69,41 @@ WavesetsBuffer {
 		inevent = inevent ?? { () };
 		inevent = inevent.copy;
 		inevent.use {
-
-			var startFrame, numFrames, sustain1;
-			var startWs = ~start ? 0;
-			var numWs = if(~end.notNil) { ~end - startWs } { ~num ? 1 };
-
-			numWs = max(numWs.asInteger, 1);
-			startWs = startWs.asInteger;
-
-			#startFrame, numFrames = wavesets.frameFor(startWs, numWs, ~useFrac ? true);
-			sustain1 = numFrames / buffer.sampleRate;
-
-			~startFrame = startFrame;
-			~numFrames = numFrames;
-			~amp = if(~wsamp.isNil) { 1.0 } { ~amp =  ~wsamp / wavesets.maximumAmp(startWs, numWs) };
-			~rate = ~rate ? 1.0;
-
-			~sustain = sustain1 / ~rate * (~repeats ? 1);
-			~legato !? {
-				~dur = ~sustain / ~legato;
-				if(~dur < 0.0001) { ~type = \rest };
-			};
-			~buf = buffer;
-			~instrument = if(~rate2.notNil) { \wvst1gl } { \wvst0 };
+			this.addWavesetsToEvent;
+			this.finalizeEvent;
 		};
 		^inevent
 	}
 
+	addWavesetsToEvent {
+		var theseXings = if (~useFrac ? true) { wavesets.fracXings } { wavesets.xings };
+		var startWs = ~start ? 0;
+		var numWs = if(~end.notNil) { ~end - startWs } { ~num ? 1 };
+		~startFrame = theseXings.clipAt(startWs);
+		~endFrame = theseXings.clipAt(startWs + numWs);
+		~numFrames = absdif(~endFrame, ~startFrame);
+		~rate = ~rate ? 1.0;
+		~sustain = ~numFrames / (buffer.sampleRate * ~rate) * (~repeats ? 1);
+		~amp = if(~wsamp.isNil) { 1.0 } { ~amp =  ~wsamp / wavesets.maximumAmp(startWs, numWs) };
+	}
+
+	finalizeEvent {
+		~legato !? {
+			~dur = ~sustain / ~legato;
+			if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
+		};
+		~buf = buffer;
+		~instrument = if(~rate2.notNil) { \wvst1gl } { \wvst0 };
+	}
+
+
 	makeEvent { |start=0, num, end, rate=1, rate2, legato, wsamp, useFrac|
-		^this.asEvent((start: start, end: end, num: num, rate: rate, rate2: rate2, legato: legato, wsamp: wsamp, useFrac:useFrac))
+		var event = (start: start, end: end, num: num, rate: rate, rate2: rate2, legato: legato, wsamp: wsamp, useFrac:useFrac);
+		event.use {
+			this.addWavesetsToEvent;
+			this.finalizeEvent;
+		};
+		^event
 	}
 
 	// backwards compatibility
