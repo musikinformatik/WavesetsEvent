@@ -6,7 +6,7 @@ w = WavesetsBuffer.new.readChannel(Platform.resourceDir +/+ "sounds/a11wlk01.wav
 w.plot(6, 100);
 
 s.boot;
-WavesetsBuffer.read(Platform.resourceDir +/+ "sounds/a11wlk01.wav").add(\x);
+WavesetsBuffer.read(Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff").add(\x);
 WavesetsBuffer.read(Platform.resourceDir +/+ "sounds/a11wlk01.wav").add(\y);
 
 WavesetsBuffer.prepareSynthDefs;
@@ -15,8 +15,10 @@ WavesetsBuffer.all.at(\y).buffer
 
 WavesetsBuffer.all.at(\x).makeEvent;
 WavesetsBuffer.all.at(\x).makeEvent(10, 800).play;
+WavesetsBuffer.all.at(\y).makeEvent(10, 800).play;
 
-WavesetsBuffer.all.at(\x) == WavesetsBuffer.all.at(\y)
+
+
 
 
 w = WavesetsBuffer.all.at(\y);
@@ -28,11 +30,11 @@ w.nearestCrossing(891)
 Pdef(\x,
 	Pws(
 		Pbind(
-			\start, Pseries(0, 30, 100),
-			\num, 200,
-			\legato, 1.5,
+			\start, Pn(Pseries(0, 2, 1000)),
+			\num, 7,
+			\legato, 1.0,
 			\wsamp, 1,
-			\name, \y
+			\name, Prand([\x, \y], inf)
 		)
 	)
 ).play;
@@ -43,7 +45,7 @@ Pdef(\x,
 Pdef(\x,
 	Pws(
 		Pbind(
-			\start, Pbrown(0, WavesetsBuffer.all.at(\y).numXings, 30),
+			\start, Pbrown(0, WavesetsBuffer.all.at(\y).wavesets.numXings, 30),
 			\num, Pbrown(5, 40, 1),
 			\legato, 1.0,
 			\wsamp, 1,
