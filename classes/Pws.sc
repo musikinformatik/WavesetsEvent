@@ -9,7 +9,7 @@ Pws : FilterPattern {
 			event = stream.next(inevent);
 			event.notNil
 		} {
-			wavesets = WavesetsBuffer.asEvent(event);
+			wavesets = AbstractWavesetsEvent.asEvent(event);
 			inevent = wavesets.yield
 		}
 	}

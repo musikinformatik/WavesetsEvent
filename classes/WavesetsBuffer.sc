@@ -26,18 +26,20 @@ AbstractWavesetsEvent {
 	asEvent { |inevent|
 		inevent = inevent ?? { () };
 		inevent = inevent.copy;
-		inevent.use {
-			this.addBuffersToEvent;
-			this.addWavesetsToEvent;
-			this.finalizeEvent;
-		};
+		inevent.use { this.addToEvent };
 		^inevent
+	}
+
+	addToEvent {
+		this.addBuffersToEvent;
+		this.addWavesetsToEvent;
+		this.finalizeEvent;
 	}
 
 	*asEvent { |inevent|
 		var item = all.at(inevent.at(\name));
 		if(item.isNil) { "no wavesets with this name: %".format(inevent.at(\name)).warn; ^nil };
-		if(item.wavesets.isNil) { "wavesets not initialised: %".format(inevent.at(\name)).warn; ^nil };
+		if(item.isReady.not) { "wavesets not initialised: %".format(inevent.at(\name)).warn; ^nil };
 		^item.asEvent(inevent)
 	}
 
@@ -99,7 +101,7 @@ WavesetsEvent : AbstractWavesetsEvent {
 	}
 
 	addBuffersToEvent {
-		~buf = buffer.index;
+		~buf = buffer.bufnum;
 		~sampleRate = buffer.sampleRate;
 	}
 
@@ -143,23 +145,23 @@ WavesetsEvent : AbstractWavesetsEvent {
 
 	*prepareSynthDefs {
 
-		SynthDef(\wvst0, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, sustain = 1, amp = 0.1, pan, interpolation = 2, busOffset = 0 |
+		SynthDef(\wvst0, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, sustain = 1, amp = 0.1, pan, interpolation = 2 |
 			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rate, 0, numFrames) + startFrame;
 			var env = EnvGen.ar(Env([amp, amp, 0], [sustain, 0]), doneAction: 2);
 			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
 
-			OffsetOut.ar(out + busOffset, Pan2.ar(snd, pan));
-		}, \ir.dup(10)).add;
+			OffsetOut.ar(out, Pan2.ar(snd, pan));
+		}, \ir.dup(9)).add;
 
 		SynthDef(\wvst1gl, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, rate2 = 1, sustain = 1,
-			amp = 0.1, pan, interpolation = 2, busOffset = 0 |
+			amp = 0.1, pan, interpolation = 2 |
 			var rateEnv = Line.ar(rate, rate2, sustain);
 			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rateEnv, 0, numFrames) + startFrame;
 			var env = EnvGen.ar(Env([amp, amp, 0], [sustain, 0]), doneAction: 2);
 			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
 
-			OffsetOut.ar(out + busOffset, Pan2.ar(snd, pan));
-		}, \ir.dup(11)).add;
+			OffsetOut.ar(out, Pan2.ar(snd, pan));
+		}, \ir.dup(10)).add;
 
 	}
 
@@ -187,7 +189,7 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		};
 		channels = channels.asArray;
 		count = channels.size;
-		finish = { if(count > 0) { count = count - 1 } { this.setBufferArray(buffers, onComplete) } };
+		finish = { if(count > 1) { count = count - 1 } { this.setBufferArray(buffers, onComplete) } };
 
 		buffers = channels.asArray.collect { |each|
 			Buffer.readChannel(server ? Server.default, path, startFrame, numFrames, channels: each, action: finish)
@@ -201,56 +203,54 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		bufferArray = buffers;
 	}
 
+	isReady { ^wavesetsArray.notNil and: { bufferArray.notNil } }
 
-	/*
-	needs fixing
-	*/
+	addToEvent {
+		var lastIndex = wavesetsArray.size - 1;
+		var guide = (~guide? 0).clip(0, lastIndex);
+		var guideWavesets = wavesetsArray[guide];
+		var theseXings = if (~useFrac ? true) { guideWavesets.fracXings } { guideWavesets.xings };
+		var startWs = ~start ? 0;
 
-	asEvent { |inevent|
-		var guide = inevent[\guide] ? 0;
-		var lags, allStarts, allEnds, sampleDur;
+		~num = if(~end.notNil) { ~end - startWs } { ~num ? 1 };
+		~startFrame = theseXings.clipAt(startWs);
+		~endFrame = theseXings.clipAt(startWs + ~num);
+		~numFrames = absdif(~endFrame, ~startFrame);
+		~amp = if(~wsamp.isNil) { 1.0 } { ~amp =  ~wsamp / guideWavesets.maximumAmp(~start, ~num) };
 
 
-		var allEvents = wavesetsArray.collect { |each| each.asEvent(inevent) };
-		var guideEvent = allEvents[guide].asEvent(inevent);
-		var startFrame = guideEvent[\startFrame];
-		var endFrame = guideEvent[\endFrame];
-
-		allStarts = wavesetsArray.collect { |each, i|
+		~allStarts = wavesetsArray.collect { |each, i|
 			if(guide == i) {
-				startFrame
+				~startFrame
 			} {
-				each.wavesets.nextCrossing(startFrame)
+				each.nextCrossing(~startFrame)
 			};
 		};
 
-		allEnds = wavesetsArray.collect { |each, i|
+		~allEnds = wavesetsArray.collect { |each, i|
 			if(guide == i) {
-				endFrame
+				~endFrame
 			} {
-				each.wavesets.prevCrossing(endFrame)
+				each.prevCrossing(~endFrame)
 			};
 		};
 
-		lags = allStarts - startFrame;
+		~sampleDur = bufferArray[guide].sampleRate.reciprocal;
+		~lag = ~allStarts - ~startFrame * ~sampleDur;
+		~rate = ~rate ? 1.0;
 
-		sampleDur = guideEvent[\buf].sampleRate.reciprocal;
+		~startFrame = ~allStarts;
+		~endFrame = ~allEnds;
+		~sustain = (~endFrame - ~startFrame) * ~sampleDur * (~repeats ? 1);
 
-		allEvents.do { |event, i|
-			if(guide != i) {
-				event.use {
-					~lag = lags[i];
-					~startFrame = allStarts[i];
-					~endFrame = allEnds[i];
-					~sustain = ~endFrame - ~endFrame * sampleDur;
-					~busOffset = i;
-					~pan = -1;
-					wavesetsArray[i].finalizeEvent;
-				}
-			}
+		~legato !? {
+			~dur = ~sustain[guide] / ~legato;
+			if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
 		};
 
-		^allEvents
+		~busOffset = (0..lastIndex);
+		~pan = -1;
+		~instrument = if(~rate2.notNil) { \wvst1glmulti } { \wvst0multi }
 
 	}
 
@@ -263,6 +263,29 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 	hash {
 		^this.instVarHash(#[\wavesetArray, \bufferArray])
+	}
+
+
+	*prepareSynthDefs {
+
+		SynthDef(\wvst0multi, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, sustain = 1, amp = 0.1, pan, interpolation = 2, busOffset = 0 |
+			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rate, 0, numFrames) + startFrame;
+			var env = EnvGen.ar(Env([amp, amp, 0], [sustain, 0]), doneAction: 2);
+			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
+
+			OffsetOut.ar(out + busOffset, Pan2.ar(snd, pan));
+		}, \ir.dup(10)).add;
+
+		SynthDef(\wvst1glmulti, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, rate2 = 1, sustain = 1,
+			amp = 0.1, pan, interpolation = 2, busOffset = 0 |
+			var rateEnv = Line.ar(rate, rate2, sustain);
+			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rateEnv, 0, numFrames) + startFrame;
+			var env = EnvGen.ar(Env([amp, amp, 0], [sustain, 0]), doneAction: 2);
+			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
+
+			OffsetOut.ar(out + busOffset, Pan2.ar(snd, pan));
+		}, \ir.dup(11)).add;
+
 	}
 }
 
