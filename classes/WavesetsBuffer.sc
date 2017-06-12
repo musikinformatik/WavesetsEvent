@@ -198,6 +198,11 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		bufferArray = buffers;
 	}
 
+
+	/*
+	needs fixing
+	*/
+
 	asEvent { |inevent|
 		var guide = inevent[\guide] ? 0;
 		var lags, allStarts, allEnds, sampleDur;
