@@ -6,34 +6,80 @@ todo: global cache like in the original Wavesets
 */
 
 
-WavesetsBuffer {
+AbstractWavesetsEvent {
 	classvar <all;
-
-	var <buffer, <wavesets;
 
 	*initClass {
 		all = IdentityDictionary.new
-	}
-
-	*read { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server|
-		^this.new.readChannel(path, channel, startFrame, numFrames, onComplete, server)
-	}
-
-	readChannel { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server|
-		var signal, finish, buffer;
-		server = server ? Server.default;
-		if(server.serverRunning.not) {
-			"Reading WavesetsBuffer failed. Server % not running".format(server).warn;
-			^this
-		};
-		finish = { this.setBuffer(buffer, onComplete) };
-		buffer = Buffer.readChannel(server ? Server.default, path, startFrame, numFrames, channels: channel.asArray.keep(1), action: finish);
 	}
 
 	add { |name|
 		var old = all.at(name);
 		old.free;
 		all.put(name, this)
+	}
+
+	isReady {
+		^this.subclassResponsibility(thisMethod)
+	}
+
+	asEvent { |inevent|
+		inevent = inevent ?? { () };
+		inevent = inevent.copy;
+		inevent.use {
+			this.addWavesetsToEvent;
+			this.finalizeEvent;
+		};
+		^inevent
+	}
+
+	*asEvent { |inevent|
+		var item = all.at(inevent.at(\name));
+		if(item.isNil) { "no wavesets with this name: %".format(inevent.at(\name)).warn; ^nil };
+		if(item.wavesets.isNil) { "wavesets not initialised: %".format(inevent.at(\name)).warn; ^nil };
+		^item.asEvent(inevent)
+	}
+
+	makeEvent { |start=0, num, end, rate=1, rate2, legato, wsamp, useFrac|
+		var event = (start: start, end: end, num: num, rate: rate, rate2: rate2, legato: legato, wsamp: wsamp, useFrac:useFrac);
+		event.use {
+			this.addWavesetsToEvent;
+			this.finalizeEvent;
+		};
+		^event
+	}
+
+
+	// backwards compatibility
+	eventFor { |startWs=0, numWs=5, repeats=3, playRate=1, useFrac = true|
+		^this.asEvent((start: startWs, length: numWs, repeats: repeats, rate: playRate, useFrac: useFrac))
+	}
+
+	toBuffer { |buffer, onComplete|
+		^this.shouldNotImplement(thisMethod)
+	}
+}
+
+
+
+WavesetsEvent : AbstractWavesetsEvent {
+
+
+	var <buffer, <wavesets;
+
+	*read { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server|
+		^this.new.readChannel(path, channel, startFrame, numFrames, onComplete, server)
+	}
+
+	readChannel { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server|
+		var finish, buffer;
+		server = server ? Server.default;
+		if(server.serverRunning.not) {
+			"Reading WavesetsBuffer failed. Server % not running".format(server).warn;
+			^this
+		};
+		finish = { this.setBuffer(buffer, onComplete) };
+		buffer = Buffer.readChannel(server ? Server.default, path, startFrame, numFrames, channels: channel.asArray, action: finish);
 	}
 
 	setBuffer { |argBuffer, onComplete|
@@ -48,31 +94,11 @@ WavesetsBuffer {
 
 	server { ^buffer.server }
 
-	toBuffer { |buffer, onComplete|
-		^this.shouldNotImplement(thisMethod)
-	}
+	isReady { ^wavesets.notNil and: { buffer.notNil } }
 
 	asBuffer { |server, onComplete|
 		if(server != buffer.server) { Error("can't copy waveset to another server").throw };
 		^buffer
-	}
-
-
-	*asEvent { |inevent|
-		var item = all.at(inevent.at(\name));
-		if(item.isNil) { "no wavesets with this name: %".format(inevent.at(\name)).warn; ^nil };
-		if(item.wavesets.isNil) { "wavesets not initialised: %".format(inevent.at(\name)).warn; ^nil };
-		^item.asEvent(inevent)
-	}
-
-	asEvent { |inevent|
-		inevent = inevent ?? { () };
-		inevent = inevent.copy;
-		inevent.use {
-			this.addWavesetsToEvent;
-			this.finalizeEvent;
-		};
-		^inevent
 	}
 
 	addWavesetsToEvent {
@@ -82,8 +108,6 @@ WavesetsBuffer {
 		~startFrame = theseXings.clipAt(startWs);
 		~endFrame = theseXings.clipAt(startWs + ~num);
 		~numFrames = absdif(~endFrame, ~startFrame);
-
-
 	}
 
 	finalizeEvent {
@@ -98,68 +122,6 @@ WavesetsBuffer {
 		~instrument = if(~rate2.notNil) { \wvst1gl } { \wvst0 };
 	}
 
-	*asMultiEvent { |wavesets, inevent|
-		var guide = inevent[\guide] ? 0;
-		var lags, allStarts, allEnds, sampleDur;
-
-
-		var allEvents = wavesets.collect { |each| each.asEvent(inevent) };
-		var guideEvent = allEvents[guide].asEvent(inevent);
-		var startFrame = guideEvent[\startFrame];
-		var endFrame = guideEvent[\endFrame];
-
-		allStarts = wavesets.collect { |each, i|
-			if(guide == i) {
-				startFrame
-			} {
-				each.wavesets.nextCrossing(startFrame)
-			};
-		};
-
-		allEnds = wavesets.collect { |each, i|
-			if(guide == i) {
-				endFrame
-			} {
-				each.wavesets.prevCrossing(endFrame)
-			};
-		};
-
-		lags = allStarts - startFrame;
-
-		sampleDur = guideEvent[\buf].sampleRate.reciprocal;
-
-		allEvents.do { |event, i|
-			if(guide != i) {
-				event.use {
-					~lag = lags[i];
-					~startFrame = allStarts[i];
-					~endFrame = allEnds[i];
-					~sustain = ~endFrame - ~endFrame * sampleDur;
-					~busOffset = i;
-					~pan = -1;
-					wavesets[i].finalizeEvent;
-				}
-			}
-		};
-
-		^allEvents
-
-	}
-
-
-	makeEvent { |start=0, num, end, rate=1, rate2, legato, wsamp, useFrac|
-		var event = (start: start, end: end, num: num, rate: rate, rate2: rate2, legato: legato, wsamp: wsamp, useFrac:useFrac);
-		event.use {
-			this.addWavesetsToEvent;
-			this.finalizeEvent;
-		};
-		^event
-	}
-
-	// backwards compatibility
-	eventFor { |startWs=0, numWs=5, repeats=3, playRate=1, useFrac = true|
-		^this.asEvent((start: startWs, length: numWs, repeats: repeats, rate: playRate, useFrac: useFrac))
-	}
 
 	plot { |index = 0, length = 1|
 		^wavesets.plot(index, length, buffer.sampleRate)
@@ -200,6 +162,100 @@ WavesetsBuffer {
 
 
 
+}
+
+
+
+WavesetsMultiEvent : AbstractWavesetsEvent {
+
+
+	var <bufferArray, <wavesetsArray;
+
+	*read { |path, channels = 0, startFrame = 0, numFrames = -1, onComplete, server|
+		^this.new.readAllChannels(path, channels, startFrame, numFrames, onComplete, server)
+	}
+
+	readAllChannels { |path, channels = 0, startFrame = 0, numFrames = -1, onComplete, server|
+		var finish, buffers, count;
+		server = server ? Server.default;
+		if(server.serverRunning.not) {
+			"Reading WavesetsBuffer failed. Server % not running".format(server).warn;
+			^this
+		};
+		channels = channels.asArray;
+		count = channels.size;
+		finish = { if(count > 0) { count = count - 1 } { this.setBufferArray(buffers, onComplete) } };
+
+		buffers = channels.asArray.collect { |each|
+			Buffer.readChannel(server ? Server.default, path, startFrame, numFrames, channels: each, action: finish)
+		};
+	}
+
+	setBufferArray { |buffers, onComplete|
+		var count = buffers.size;
+		var finish = { if(count > 0, { count = count - 1 }, onComplete) };
+		wavesetsArray = buffers.collect { |each| Wavesets2.new.fromBuffer(each, onComplete) };
+		bufferArray = buffers;
+	}
+
+	asEvent { |inevent|
+		var guide = inevent[\guide] ? 0;
+		var lags, allStarts, allEnds, sampleDur;
+
+
+		var allEvents = wavesetsArray.collect { |each| each.asEvent(inevent) };
+		var guideEvent = allEvents[guide].asEvent(inevent);
+		var startFrame = guideEvent[\startFrame];
+		var endFrame = guideEvent[\endFrame];
+
+		allStarts = wavesetsArray.collect { |each, i|
+			if(guide == i) {
+				startFrame
+			} {
+				each.wavesets.nextCrossing(startFrame)
+			};
+		};
+
+		allEnds = wavesetsArray.collect { |each, i|
+			if(guide == i) {
+				endFrame
+			} {
+				each.wavesets.prevCrossing(endFrame)
+			};
+		};
+
+		lags = allStarts - startFrame;
+
+		sampleDur = guideEvent[\buf].sampleRate.reciprocal;
+
+		allEvents.do { |event, i|
+			if(guide != i) {
+				event.use {
+					~lag = lags[i];
+					~startFrame = allStarts[i];
+					~endFrame = allEnds[i];
+					~sustain = ~endFrame - ~endFrame * sampleDur;
+					~busOffset = i;
+					~pan = -1;
+					wavesetsArray[i].finalizeEvent;
+				}
+			}
+		};
+
+		^allEvents
+
+	}
+
+
+	// equality
+
+	== { |that|
+		^this.compareObject(that, #[\wavesetArray, \bufferArray])
+	}
+
+	hash {
+		^this.instVarHash(#[\wavesetArray, \bufferArray])
+	}
 }
 
 
