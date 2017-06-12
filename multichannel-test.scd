@@ -32,11 +32,11 @@ Pdef(\x,
 Pdef(\x,
 	Pws(
 		Pbind(
-			\start, Pbrown(0, WavesetsBuffer.all.at(\y).wavesets.numXings, 30),
-			\num, Pbrown(5, 40, 1),
+			\start, Pbrown(0, 88001, 30),
+			\num, Pbrown(5, 140, 1),
 			\legato, 1.0,
 			\wsamp, 1,
-			\name, \y
+			\name, \x
 		)
 	)
 ).play;
