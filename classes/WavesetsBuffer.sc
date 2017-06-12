@@ -27,6 +27,7 @@ AbstractWavesetsEvent {
 		inevent = inevent ?? { () };
 		inevent = inevent.copy;
 		inevent.use {
+			this.addBuffersToEvent;
 			this.addWavesetsToEvent;
 			this.finalizeEvent;
 		};
@@ -42,11 +43,7 @@ AbstractWavesetsEvent {
 
 	makeEvent { |start=0, num, end, rate=1, rate2, legato, wsamp, useFrac|
 		var event = (start: start, end: end, num: num, rate: rate, rate2: rate2, legato: legato, wsamp: wsamp, useFrac:useFrac);
-		event.use {
-			this.addWavesetsToEvent;
-			this.finalizeEvent;
-		};
-		^event
+		^this.asEvent(event);
 	}
 
 
@@ -101,6 +98,11 @@ WavesetsEvent : AbstractWavesetsEvent {
 		^buffer
 	}
 
+	addBuffersToEvent {
+		~buf = buffer.index;
+		~sampleRate = buffer.sampleRate;
+	}
+
 	addWavesetsToEvent {
 		var theseXings = if (~useFrac ? true) { wavesets.fracXings } { wavesets.xings };
 		var startWs = ~start ? 0;
@@ -108,19 +110,20 @@ WavesetsEvent : AbstractWavesetsEvent {
 		~startFrame = theseXings.clipAt(startWs);
 		~endFrame = theseXings.clipAt(startWs + ~num);
 		~numFrames = absdif(~endFrame, ~startFrame);
+		~amp = if(~wsamp.isNil) { 1.0 } { ~amp =  ~wsamp / wavesets.maximumAmp(~start, ~num) };
 	}
 
 	finalizeEvent {
 		~rate = ~rate ? 1.0;
-		~amp = if(~wsamp.isNil) { 1.0 } { ~amp =  ~wsamp / wavesets.maximumAmp(~start, ~num) };
-		~sustain = ~numFrames / (buffer.sampleRate * ~rate) * (~repeats ? 1);
+		~sustain = ~numFrames / (~sampleRate * ~rate) * (~repeats ? 1);
 		~legato !? {
 			~dur = ~sustain / ~legato;
 			if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
 		};
-		~buf = buffer;
 		~instrument = if(~rate2.notNil) { \wvst1gl } { \wvst0 };
 	}
+
+
 
 
 	plot { |index = 0, length = 1|
