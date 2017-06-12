@@ -38,7 +38,7 @@ Wavesets2 {
 	numXings { ^xings.size }
 	size { ^xings.size }
 
-	frameFor { arg startWs, numWs = 1, useFrac = true;
+	frameFor { |startWs, numWs = 1, useFrac = true|
 
 		var theseXings = if (useFrac) { fracXings } { xings };
 		var startFrame = theseXings.clipAt(startWs);
@@ -216,10 +216,19 @@ Wavesets2 {
 		^peakIdxs
 	}
 
-	nextCrossing { |frame|
-		^xings[xings.indexOfGreaterThan(frame)]
+	nextCrossing { |frame, useFrac = true|
+		var theseXings = if (useFrac) { fracXings } { xings };
+		^theseXings[theseXings.indexOfGreaterThan(frame)]
 	}
 
+	prevCrossing { |frame, useFrac = true|
+		var theseXings = if (useFrac) { fracXings } { xings };
+		var index = theseXings.indexOfGreaterThan(frame);
+		^if(index.notNil) { theseXings[index - 1] };
+
+	}
+
+	/*
 	nearestCrossing { |frame|
 		var index = xings.indexOfGreaterThan(frame);
 		var prev, next;
@@ -229,6 +238,7 @@ Wavesets2 {
 		if(prev.isNil) { ^next };
 		^if((frame - prev) < (next - frame)) { prev } { next };
 	}
+	*/
 
 
 
