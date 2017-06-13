@@ -1,15 +1,9 @@
-WavesetsEvent.prepareSynthDefs;
-
-a = WavesetsEvent.read("/Volumes/data/archiv/ton/count basie, bill's mill.aiff");
-
-a.asEvent((start: 800, num: 1000, wsamp: 1)).play;
-
 
 s.boot;
 WavesetsMultiEvent.prepareSynthDefs;
 b = WavesetsMultiEvent.read("/Volumes/data/archiv/ton/count basie, bill's mill.aiff", [0, 1]);
 
-b.asEvent((start: 800, num: 1000, wsamp: 1)).play;
+b.asEvent((start: 800, num: 2000, wsamp: 1)).play;
 
 b.add(\x);
 
