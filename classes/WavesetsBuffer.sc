@@ -227,11 +227,18 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 	isReady { ^wavesetsArray.notNil and: { bufferArray.notNil } }
 
 	addToEvent {
+		var startWs, theseXings;
 		var lastIndex = wavesetsArray.size - 1;
 		var guide = (~guide? 0).clip(0, lastIndex);
 		var guideWavesets = wavesetsArray[guide];
-		var theseXings = if (~useFrac ? true) { guideWavesets.fracXings } { guideWavesets.xings };
-		var startWs = ~start ? 0;
+		var useFrac = ~useFrac ? true;
+
+
+		theseXings = if (useFrac) { guideWavesets.fracXings } { guideWavesets.xings };
+		~startTime !? { ~start = wavesets.nextCrossingIndex(~startTime * ~sampleRate, useFrac) };
+		~endTime !? { ~end = wavesets.nextCrossingIndex(~endTime * ~sampleRate, useFrac) };
+
+		startWs = ~start ? 0;
 
 		~num = if(~end.notNil) { ~end - startWs } { ~num ? 1 };
 		~startFrame = theseXings.clipAt(startWs);
@@ -244,7 +251,7 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 			if(guide == i) {
 				~startFrame
 			} {
-				each.nextCrossing(~startFrame)
+				each.nextCrossing(~startFrame, useFrac)
 			};
 		};
 
@@ -252,7 +259,7 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 			if(guide == i) {
 				~endFrame
 			} {
-				each.prevCrossing(~endFrame)
+				each.prevCrossing(~endFrame, useFrac)
 			};
 		};
 
