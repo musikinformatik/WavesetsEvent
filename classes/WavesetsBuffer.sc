@@ -57,6 +57,9 @@ AbstractWavesetsEvent {
 	toBuffer { |buffer, onComplete|
 		^this.shouldNotImplement(thisMethod)
 	}
+
+
+
 }
 
 
@@ -106,23 +109,41 @@ WavesetsEvent : AbstractWavesetsEvent {
 	}
 
 	addWavesetsToEvent {
-		var theseXings = if (~useFrac ? true) { wavesets.fracXings } { wavesets.xings };
-		var startWs = ~start ? 0;
+		var theseXings, startWs, useFrac;
+		useFrac = ~useFrac ? true;
+		theseXings = if (useFrac) { wavesets.fracXings } { wavesets.xings };
+		~startTime !? { ~start = wavesets.nextCrossingIndex(~startTime * ~sampleRate, useFrac) };
+		~endTime !? { ~end = wavesets.nextCrossingIndex(~endTime * ~sampleRate, useFrac) };
+		startWs = ~start ? 0;
 		~num = if(~end.notNil) { ~end - startWs } { ~num ? 1 };
 		~startFrame = theseXings.clipAt(startWs);
 		~endFrame = theseXings.clipAt(startWs + ~num);
 		~numFrames = absdif(~endFrame, ~startFrame);
-		~amp = if(~wsamp.isNil) { 1.0 } { ~amp =  ~wsamp / wavesets.maximumAmp(~start, ~num) };
+		if(~wsamp.notNil) { ~amp =  ~wsamp / wavesets.maximumAmp(~start, ~num) };
 	}
 
 	finalizeEvent {
+		var timeScale;
+
 		~rate = ~rate ? 1.0;
-		~sustain = ~numFrames / (~sampleRate * ~rate) * (~repeats ? 1);
-		~legato !? {
-			~dur = ~sustain / ~legato;
-			if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
+		if(~rate2.notNil) {
+			timeScale = ~rate + ~rate2 * 0.5;
+			~instrument = \wvst1gl;
+		} {
+			timeScale = ~rate;
+			~instrument = \wvst0;
 		};
-		~instrument = if(~rate2.notNil) { \wvst1gl } { \wvst0 };
+		~rate2 = ~rate2 ? 1.0;
+		~sustain = ~numFrames * (~repeats ? 1) / (~sampleRate * timeScale);
+		currentEnvironment.useWithoutParents {
+			~legato !? {
+				~dur ?? {
+					~dur = ~sustain / ~legato;
+					if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
+				};
+			};
+		};
+
 	}
 
 

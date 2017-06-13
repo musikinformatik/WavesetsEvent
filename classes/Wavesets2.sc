@@ -216,30 +216,22 @@ Wavesets2 {
 		^peakIdxs
 	}
 
+	nextCrossingIndex { |frame, useFrac = true|
+		var theseXings = if (useFrac) { fracXings } { xings };
+		^theseXings.indexOfGreaterThan(frame) ?? { theseXings.lastIndex }
+	}
+
 	nextCrossing { |frame, useFrac = true|
 		var theseXings = if (useFrac) { fracXings } { xings };
-		^theseXings[theseXings.indexOfGreaterThan(frame)]
+		^theseXings[theseXings.indexOfGreaterThan(frame)]  ?? { theseXings.last }
 	}
 
 	prevCrossing { |frame, useFrac = true|
 		var theseXings = if (useFrac) { fracXings } { xings };
 		var index = theseXings.indexOfGreaterThan(frame);
-		^if(index.notNil) { theseXings[index - 1] };
+		^if(index.notNil) { theseXings.clipAt(index - 1) }
 
 	}
-
-	/*
-	nearestCrossing { |frame|
-		var index = xings.indexOfGreaterThan(frame);
-		var prev, next;
-		if(index.isNil) { ^nil };
-		next = xings[index];
-		prev = xings[index - 1];
-		if(prev.isNil) { ^next };
-		^if((frame - prev) < (next - frame)) { prev } { next };
-	}
-	*/
-
 
 
 	// equality
