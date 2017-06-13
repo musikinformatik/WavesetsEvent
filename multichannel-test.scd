@@ -1,3 +1,9 @@
+/*
+
+this doesn't work very well yet.
+
+*/
+
 
 s.boot;
 WavesetsMultiEvent.prepareSynthDefs;
@@ -6,6 +12,22 @@ b = WavesetsMultiEvent.read("/Volumes/data/archiv/ton/count basie, bill's mill.a
 b.asEvent((start: 800, num: 2000, wsamp: 1)).play;
 
 b.add(\x);
+
+
+(
+Pdef(\x,
+	Pws(
+		Pbind(
+			\start, Pn(Pseries(0, 1, 10000)),
+			\num, 1,
+			\legato, 1.0,
+			\name, \x
+		)
+	)
+).play;
+)
+
+
 
 (
 Pdef(\x,

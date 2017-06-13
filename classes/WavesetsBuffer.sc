@@ -233,10 +233,13 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		var guideWavesets = wavesetsArray[guide];
 		var useFrac = ~useFrac ? true;
 
+		~buf = bufferArray;
+		~sampleRate = bufferArray[0].sampleRate;
+
 
 		theseXings = if (useFrac) { guideWavesets.fracXings } { guideWavesets.xings };
-		~startTime !? { ~start = wavesets.nextCrossingIndex(~startTime * ~sampleRate, useFrac) };
-		~endTime !? { ~end = wavesets.nextCrossingIndex(~endTime * ~sampleRate, useFrac) };
+		~startTime !? { ~start = guideWavesets.nextCrossingIndex(~startTime * ~sampleRate, useFrac) };
+		~endTime !? { ~end = guideWavesets.nextCrossingIndex(~endTime * ~sampleRate, useFrac) };
 
 		startWs = ~start ? 0;
 
@@ -271,13 +274,14 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		~endFrame = ~allEnds;
 		~sustain = (~endFrame - ~startFrame) * ~sampleDur * (~repeats ? 1);
 
-		~legato !? {
-			~dur = ~sustain[guide] / ~legato;
-			if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
+		currentEnvironment.useWithoutParents {
+			~legato !? {
+				~dur = ~sustain[guide] / ~legato;
+				if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
+			};
 		};
 
 		~busOffset = (0..lastIndex);
-		~pan = -1;
 		~instrument = if(~rate2.notNil) { \wvst1glmulti } { \wvst0multi }
 
 	}
@@ -296,23 +300,23 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 	*prepareSynthDefs {
 
-		SynthDef(\wvst0multi, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, sustain = 1, amp = 0.1, pan, interpolation = 2, busOffset = 0 |
+		SynthDef(\wvst0multi, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, sustain = 1, amp = 0.1, interpolation = 2, busOffset = 0 |
 			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rate, 0, numFrames) + startFrame;
 			var env = EnvGen.ar(Env([amp, amp, 0], [sustain, 0]), doneAction: 2);
 			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
 
-			OffsetOut.ar(out + busOffset, Pan2.ar(snd, pan));
-		}, \ir.dup(10)).add;
+			OffsetOut.ar(out + busOffset, snd);
+		}, \ir.dup(9)).add;
 
 		SynthDef(\wvst1glmulti, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, rate2 = 1, sustain = 1,
-			amp = 0.1, pan, interpolation = 2, busOffset = 0 |
+			amp = 0.1, interpolation = 2, busOffset = 0 |
 			var rateEnv = Line.ar(rate, rate2, sustain);
 			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rateEnv, 0, numFrames) + startFrame;
 			var env = EnvGen.ar(Env([amp, amp, 0], [sustain, 0]), doneAction: 2);
 			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
 
-			OffsetOut.ar(out + busOffset, Pan2.ar(snd, pan));
-		}, \ir.dup(11)).add;
+			OffsetOut.ar(out + busOffset, snd);
+		}, \ir.dup(10)).add;
 
 	}
 }
