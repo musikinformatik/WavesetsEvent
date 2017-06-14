@@ -1,6 +1,6 @@
 
 
-Pws : FilterPattern {
+Pwavesets : FilterPattern {
 
 	embedInStream { |inevent|
 		var stream = pattern.asStream;

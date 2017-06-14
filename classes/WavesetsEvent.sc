@@ -37,14 +37,25 @@ AbstractWavesetsEvent {
 	}
 
 	*asEvent { |inevent|
-		var item = all.at(inevent.at(\name));
-		if(item.isNil) { "no wavesets with this name: %".format(inevent.at(\name)).warn; ^nil };
-		if(item.isReady.not) { "wavesets not initialised: %".format(inevent.at(\name)).warn; ^nil };
-		^item.asEvent(inevent)
+		var wavesets, name;
+		wavesets = inevent.at(\wavesets);
+		wavesets !? { ^wavesets.asEvent(inevent) };
+		wavesets = all.at(inevent.at(\name));
+		if(wavesets.isNil) { "no wavesets with this name: %".format(inevent.at(\name)).warn; ^nil };
+		if(wavesets.isReady.not) { "wavesets not initialised: %".format(inevent.at(\name)).warn; ^nil };
+		^wavesets.asEvent(inevent)
 	}
 
 	makeEvent { |start=0, num, end, rate=1, rate2, legato, wsamp, useFrac|
-		var event = (start: start, end: end, num: num, rate: rate, rate2: rate2, legato: legato, wsamp: wsamp, useFrac:useFrac);
+		var event = (
+			start: start,
+			end: end, num: num,
+			rate: rate,
+			rate2: rate2,
+			legato: legato,
+			wsamp: wsamp,
+			useFrac:useFrac
+		);
 		^this.asEvent(event);
 	}
 
@@ -85,7 +96,7 @@ WavesetsEvent : AbstractWavesetsEvent {
 	}
 
 	setBuffer { |argBuffer, onComplete|
-		wavesets = Wavesets2.new.fromBuffer(argBuffer, onComplete);
+		wavesets = Wavesets2.fromBuffer(argBuffer, onComplete);
 		buffer = argBuffer;
 	}
 
@@ -93,6 +104,8 @@ WavesetsEvent : AbstractWavesetsEvent {
 		buffer.free;
 		wavesets = nil;
 	}
+
+	size { ^wavesets.size }
 
 	server { ^buffer.server }
 
@@ -123,7 +136,8 @@ WavesetsEvent : AbstractWavesetsEvent {
 	}
 
 	finalizeEvent {
-		var timeScale;
+		var timeScale, reverse;
+		//reverse = ~end < ~start;
 
 		~rate = ~rate ? 1.0;
 		if(~rate2.notNil) {
@@ -136,12 +150,10 @@ WavesetsEvent : AbstractWavesetsEvent {
 		~rate2 = ~rate2 ? 1.0;
 		~sustain = ~numFrames * (~repeats ? 1) / (~sampleRate * timeScale);
 		currentEnvironment.useWithoutParents {
-			~legato !? {
-				~dur ?? {
-					~dur = ~sustain / ~legato;
-					if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
-				};
-			};
+			~dur ?? {
+				~dur = if(~legato.isNil) { ~sustain } { ~sustain / ~legato };
+				if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
+			}
 		};
 
 	}
