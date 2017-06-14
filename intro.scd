@@ -24,8 +24,9 @@ b.size;
 // you pass an event with parameters and get back an event with parameters
 a.asEvent((start: 76, end: 899)).play;
 a.asEvent((start: 136, num: 99)).play;
+a.asEvent((start: 136, num: 9911, rate: -1)).play; // backwards
 
-a.asEvent((start: 136, num: 9911, rate: -1)).play; // doesn't work yet.
+
 
 // this sounds better in a repetition:
 (

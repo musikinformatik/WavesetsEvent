@@ -131,7 +131,7 @@ WavesetsEvent : AbstractWavesetsEvent {
 		~num = if(~end.notNil) { ~end - startWs } { ~num ? 1 };
 		~startFrame = theseXings.clipAt(startWs);
 		~endFrame = theseXings.clipAt(startWs + ~num);
-		~numFrames = absdif(~endFrame, ~startFrame);
+		~numFrames = ~endFrame - ~startFrame;
 		if(~wsamp.notNil) { ~amp =  ~wsamp / wavesets.maximumAmp(~start, ~num) };
 	}
 
@@ -148,10 +148,11 @@ WavesetsEvent : AbstractWavesetsEvent {
 			~instrument = \wvst0;
 		};
 		~rate2 = ~rate2 ? 1.0;
-		~sustain = ~numFrames * (~repeats ? 1) / (~sampleRate * timeScale);
+		~sustain = abs(~numFrames * (~repeats ? 1) / (~sampleRate * timeScale));
 		currentEnvironment.useWithoutParents {
 			~dur ?? {
 				~dur = if(~legato.isNil) { ~sustain } { ~sustain / ~legato };
+				if(~dur.isArray) { ~dur = ~dur[0] };
 				if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
 			}
 		};
@@ -179,7 +180,7 @@ WavesetsEvent : AbstractWavesetsEvent {
 	*prepareSynthDefs {
 
 		SynthDef(\wvst0, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, sustain = 1, amp = 0.1, pan, interpolation = 2 |
-			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rate, 0, numFrames) + startFrame;
+			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rate * sign(numFrames), 0, abs(numFrames)) + startFrame;
 			var env = EnvGen.ar(Env([amp, amp, 0], [sustain, 0]), doneAction: 2);
 			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
 
@@ -188,8 +189,8 @@ WavesetsEvent : AbstractWavesetsEvent {
 
 		SynthDef(\wvst1gl, { | out = 0, buf = 0, startFrame = 0, numFrames = 441, rate = 1, rate2 = 1, sustain = 1,
 			amp = 0.1, pan, interpolation = 2 |
-			var rateEnv = Line.ar(rate, rate2, sustain);
-			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rateEnv, 0, numFrames) + startFrame;
+			var rateEnv = Line.ar(rate, rate2, sustain) * sign(numFrames);
+			var phasor = Phasor.ar(0, BufRateScale.ir(buf) * rateEnv, 0, abs(numFrames)) + startFrame;
 			var env = EnvGen.ar(Env([amp, amp, 0], [sustain, 0]), doneAction: 2);
 			var snd = BufRd.ar(1, buf, phasor, 1, interpolation) * env;
 
