@@ -104,6 +104,38 @@ Tdef(\u, {
 )
 
 
+
+// use a slider to search for interesting places. hit some key to post them, hit space to start the Tdef
+// edit the other parameters in the code as you like them.
+(
+Tdef(\u, {
+	inf.do { |i|
+		var event;
+		event = (
+			start: ~start ? 0,
+			num: rrand(1, 10),
+			rate: 1,
+			repeats:1
+		);
+		event = a.asEvent(event);
+		event.play;
+		event[\dur].wait;
+	}
+}).play;
+)
+
+(
+var w = Window("adjust start", Rect(100, 100, 820, 50)).front;
+var sl = Slider(w);
+sl.orientation = \horizontal;
+sl.action = { |view| ~start = view.value.linlin(0, 1, 0, a.size) };
+sl.keyDownAction = { |view, char| if(char == $ ) { Tdef(\u).play } { ~start.post; ",".postln; } };
+w.layout = HLayout(sl);
+)
+
+
+
+
 // patterns
 // using Pwavesets, we can use wavesets in event patterns directly
 
