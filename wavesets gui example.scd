@@ -3,15 +3,22 @@
 
 // more elaborate GUI
 (
-~wavesets = ~wavesets ?? { a = WavesetsEvent.read(Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff") };
+
+~wavesets = ~wavesets ?? {
+	WavesetsEvent.read(Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff")
+};
+
+// edit me while playing
 Tdef(\u, {
 	inf.do { |i|
 		var event;
 		event = (
 			start: ~start ? 0,
 			num: rrand(1, 10),
-			rate: 1.2,
-			repeats:1
+			rate: 1.0,
+			rate2: 1.0,
+			repeats:1,
+			amp: 0.1
 		);
 		event = ~wavesets.asEvent(event);
 		event.play;
@@ -21,9 +28,16 @@ Tdef(\u, {
 )
 
 
+// search for interesting offsets
+
+/*
+keyboard:
+space: 	start Tdef(\u)
+f		post current file path
+*/
 
 (
-var w = Window("adjust start", Rect(100, 100, 820, 50)).front;
+var w = Window("time bandit", Rect(100, 100, 820, 50)).front;
 var sl = Slider(w).orientation_(\horizontal);
 var b = Button(w).states_([["open"]]);
 b.action = {
