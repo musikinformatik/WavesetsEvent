@@ -138,18 +138,21 @@ WavesetsEvent : AbstractWavesetsEvent {
 	finalizeEvent {
 		var timeScale, reverse;
 		//reverse = ~end < ~start;
-
-		~rate = ~rate ? 1.0;
-		if(~rate2.notNil) {
-			timeScale = ~rate + ~rate2 * 0.5;
-			~instrument = \wvst1gl;
-		} {
-			timeScale = ~rate;
-			~instrument = \wvst0;
-		};
-		~rate2 = ~rate2 ? 1.0;
-		~sustain = abs(~numFrames * (~repeats ? 1) / (~sampleRate * timeScale));
 		currentEnvironment.useWithoutParents {
+			~rate = ~rate ? 1.0;
+			if(~rate2.notNil) {
+				timeScale = ~rate + ~rate2 * 0.5;
+				~instrument = ~instrument ? \wvst1gl;
+			} {
+				timeScale = ~rate;
+				~instrument = ~instrument ? \wvst0;
+			};
+			~rate2 = ~rate2 ? 1.0;
+
+			~sustain = ~sustain ?? {
+				abs(~numFrames * (~repeats ? 1) / (~sampleRate * timeScale))
+			};
+
 			~dur ?? {
 				~dur = if(~legato.isNil) { ~sustain } { ~sustain / ~legato };
 				if(~dur.isArray) { ~dur = ~dur[0] };
