@@ -149,14 +149,21 @@ WavesetsEvent : AbstractWavesetsEvent {
 			};
 			~rate2 = ~rate2 ? 1.0;
 
-			~sustain = ~sustain ?? {
-				abs(~numFrames * (~repeats ? 1) / (~sampleRate * timeScale))
-			};
+			if(~numFrames <= 0) {
+				~type = \rest;
+				~dur = 1.0;
+				"start or end of wavesets out of bounds".postln;
+			} {
 
-			~dur ?? {
-				~dur = if(~legato.isNil) { ~sustain } { ~sustain / ~legato };
-				if(~dur.isArray) { ~dur = ~dur[0] };
-				if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
+				~sustain = ~sustain ?? {
+					abs(~numFrames * (~repeats ? 1) / (~sampleRate * timeScale))
+				};
+
+				~dur ?? {
+					~dur = if(~legato.isNil) { ~sustain } { ~sustain / ~legato };
+					if(~dur.isArray) { ~dur = ~dur[0] };
+					if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
+				}
 			}
 		};
 
