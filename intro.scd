@@ -70,6 +70,24 @@ Tdef(\u, {
 )
 
 
+// reproduce original with varying chunk size, but reverse the chunks
+(
+Tdef(\u, {
+	var start = 0, num = 1;
+	inf.do { |i|
+		var event;
+		event = a.asEvent((start: start, num: num, rate: -1));
+		event.play;
+		event[\dur].wait;
+
+		start = start + num % a.size;
+		num = rrand(1, 3) * (i / 10 % a.size + 1)
+	}
+}).play
+)
+
+
+
 // rate and legato
 (
 Tdef(\u, {
