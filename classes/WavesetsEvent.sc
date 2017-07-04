@@ -128,7 +128,7 @@ WavesetsEvent : AbstractWavesetsEvent {
 		~startTime !? { ~start = wavesets.nextCrossingIndex(~startTime * ~sampleRate, useFrac) };
 		~endTime !? { ~end = wavesets.nextCrossingIndex(~endTime * ~sampleRate, useFrac) };
 		startWs = ~start ? 0;
-		~num = if(~end.notNil) { ~end - startWs } { ~num ? 1 };
+		~num = if(~end.notNil) { max(~end - startWs, 1) } { ~num ? 1 };
 		~startFrame = theseXings.clipAt(startWs);
 		~endFrame = theseXings.clipAt(startWs + ~num);
 		~numFrames = ~endFrame - ~startFrame;
@@ -152,7 +152,8 @@ WavesetsEvent : AbstractWavesetsEvent {
 			if(~numFrames <= 0) {
 				~type = \rest;
 				~dur = 1.0;
-				"start or end of wavesets out of bounds".postln;
+				~sustain = 0;
+				"start or end of wavesets out of bounds:\n%\n".postf(currentEnvironment);
 			} {
 
 				~sustain = ~sustain ?? {
