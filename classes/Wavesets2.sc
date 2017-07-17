@@ -10,13 +10,13 @@ Wavesets2 {
 	var <minAmp, <maxAmp, <avgAmp, <sqrAvgAmp;
 
 
-	*fromBuffer { |buffer, onComplete|
-		^this.new.fromBuffer(buffer, onComplete)
+	*fromBuffer { |buffer, onComplete, minLength|
+		^this.new.fromBuffer(buffer, onComplete, minLength)
 	}
 
-	fromBuffer { |buffer, onComplete|
+	fromBuffer { |buffer, onComplete, minLength|
 		buffer.loadToFloatArray(0, -1, { |array|
-			this.signal_(array);
+			this.setSignal(array, minLength);
 			onComplete.value(this);
 		})
 	}
@@ -32,6 +32,11 @@ Wavesets2 {
 	signal_ { |sig|
 		signal = sig;
 		this.analyse;
+	}
+
+	setSignal { |sig, minLength|
+		signal = sig;
+		this.analyse(minLength);
 	}
 
 	numFrames { ^signal.size }
@@ -71,7 +76,7 @@ Wavesets2 {
 
 	// the interesting bit
 
-	analyse { |minLength = 10|
+	analyse { |minLength|
 		//	var chunkSize = 400, pause = 0.01;	// not used yet
 		xings = Array.new;
 		amps = Array.new;
@@ -81,16 +86,18 @@ Wavesets2 {
 		minima = Array.new; 	//
 		"%: Analysing ...".format(this.class).inform;
 
-		this.analyseFromTo(minLength);
+		this.analyseFromTo(minLength: minLength);
 		this.calcAverages;
 		"\t ... done. (% xings)".format(xings.size).inform;
 	}
 
-	analyseFromTo { |startFrame = 0, endFrame, minLength = 10| 	// minLength reasonable? => 4.4 kHz maxFreq.
+	analyseFromTo { |startFrame = 0, endFrame, minLength|
 
 		var lengthCount = 0, prevSample = 0.0;
 		var maxSamp = 0.0, minSamp = 0.0;
 		var maxAmpIndex, minAmpIndex, wavesetAmp, frac;
+
+		minLength = minLength ? 10; // minLength reasonable? => 4.4 kHz maxFreq.
 
 		// find xings, store indices, lengths, and amps.
 

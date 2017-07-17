@@ -80,23 +80,27 @@ WavesetsEvent : AbstractWavesetsEvent {
 
 	var <buffer, <wavesets;
 
-	*read { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server|
-		^this.new.readChannel(path, channel, startFrame, numFrames, onComplete, server)
+	*read { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server, minLength|
+		^this.new.readChannel(path, channel, startFrame, numFrames, onComplete, server, minLength)
 	}
 
-	readChannel { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server|
+	read { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server, minLength|
+		^this.readChannel(path, channel, startFrame, numFrames, onComplete, server, minLength)
+	}
+
+	readChannel { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server, minLength|
 		var finish, buffer;
 		server = server ? Server.default;
 		if(server.serverRunning.not) {
 			"Reading WavesetsBuffer failed. Server % not running".format(server).warn;
 			^this
 		};
-		finish = { this.setBuffer(buffer, onComplete) };
+		finish = { this.setBuffer(buffer, onComplete, minLength) };
 		buffer = Buffer.readChannel(server ? Server.default, path, startFrame, numFrames, channels: channel.asArray, action: finish);
 	}
 
-	setBuffer { |argBuffer, onComplete|
-		wavesets = Wavesets2.fromBuffer(argBuffer, onComplete);
+	setBuffer { |argBuffer, onComplete, minLength|
+		wavesets = Wavesets2.fromBuffer(argBuffer, onComplete, minLength);
 		buffer = argBuffer;
 	}
 
@@ -243,11 +247,11 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 	var <bufferArray, <wavesetsArray;
 
-	*read { |path, channels = 0, startFrame = 0, numFrames = -1, onComplete, server|
-		^this.new.readAllChannels(path, channels, startFrame, numFrames, onComplete, server)
+	*read { |path, channels = 0, startFrame = 0, numFrames = -1, onComplete, server, minLength|
+		^this.new.readAllChannels(path, channels, startFrame, numFrames, onComplete, server, minLength)
 	}
 
-	readAllChannels { |path, channels = 0, startFrame = 0, numFrames = -1, onComplete, server|
+	readAllChannels { |path, channels = 0, startFrame = 0, numFrames = -1, onComplete, server, minLength|
 		var finish, buffers, count;
 		server = server ? Server.default;
 		if(server.serverRunning.not) {
@@ -256,17 +260,17 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		};
 		channels = channels.asArray;
 		count = channels.size;
-		finish = { if(count > 1) { count = count - 1 } { this.setBufferArray(buffers, onComplete) } };
+		finish = { if(count > 1) { count = count - 1 } { this.setBufferArray(buffers, onComplete, minLength) } };
 
 		buffers = channels.asArray.collect { |each|
 			Buffer.readChannel(server ? Server.default, path, startFrame, numFrames, channels: each, action: finish)
 		};
 	}
 
-	setBufferArray { |buffers, onComplete|
+	setBufferArray { |buffers, onComplete, minLength|
 		var count = buffers.size;
 		var finish = { if(count > 0, { count = count - 1 }, onComplete) };
-		wavesetsArray = buffers.collect { |each| Wavesets2.new.fromBuffer(each, onComplete) };
+		wavesetsArray = buffers.collect { |each| Wavesets2.new.fromBuffer(each, onComplete, minLength) };
 		bufferArray = buffers;
 	}
 
