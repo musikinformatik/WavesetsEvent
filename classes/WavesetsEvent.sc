@@ -187,6 +187,25 @@ WavesetsEvent : AbstractWavesetsEvent {
 		^this.instVarHash(#[\wavesets, \buffer])
 	}
 
+	// fft
+
+	getFFT { |index, num, size, action|
+
+		var real, imag, cosTable, complex;
+		var start, numFrames;
+		#start, numFrames = this.wavesets.frameFor(index, num, false);
+		size = size ?? { numFrames.nextPowerOfTwo };
+		this.buffer.getn(start, numFrames, { |arr|
+
+			real = arr.resamp1(size).as(Signal);
+			imag = Signal.newClear(size);
+			cosTable = Signal.fftCosTable(size);
+
+			complex = fft(real, imag, cosTable);
+			action.value(complex, real, imag);
+		})
+	}
+
 
 	*prepareSynthDefs {
 
