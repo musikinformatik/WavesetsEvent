@@ -1,0 +1,103 @@
+TITLE:: WavesetsEvent
+summary:: Analyse soundfiles into short combinable fragments for granular synthesis
+categories::Synthesis Methods>Granular Synthesis
+related:: Classes/Wavesets2, Classes/Event, Classes/Buffer, Classes/Pattern
+
+DESCRIPTION::
+Wavesets analyses soundfiles into short fragments called wavesets, and contains these waveset data and their info. It can support a variety of waveset based synthesis instruments.
+
+By Trevor Wishart's definition, a waveset is a segment of an audio signal between
+one non-positive to positive zero crossing and the next. [ see T. Wishart (1994): Audible Design. ] Note that this definition only applies to mono signals.
+
+In extension of that concept, this class provides fractional zero crossings, amplitude analyses, and other statistical data. It also integrates wavesets into the pattern system.
+
+This system extends the first Wavesets implementation by Alberto de Campo. The class code::Wavesets2:: is used internally, and can be used to replicate the behaviour of the original version.  For this, see also the end of Chapter 16, Microsound, in the SuperCollider Book at MIT Press for detailed examples - code available here:
+
+link::http://supercolliderbook.net/::
+
+
+code::
+// open intro here
+
+WavesetsEvent.tutorial
+
+::
+
+CLASSMETHODS::
+
+METHOD:: read
+argument:: path
+argument:: channel
+argument:: startFrame
+argument:: numFrames
+argument:: onComplete
+argument:: server
+argument:: minLength
+
+METHOD:: prepareSynthDefs
+
+METHOD:: tutorial
+
+
+INSTANCEMETHODS::
+
+METHOD:: readChannel
+argument:: path
+argument:: channel
+argument:: startFrame
+argument:: numFrames
+argument:: onComplete
+argument:: server
+argument:: minLength
+
+METHOD:: ==
+argument:: that
+
+METHOD:: size
+
+METHOD:: server
+
+METHOD:: free
+
+METHOD:: wavesets
+
+METHOD:: buffer
+
+METHOD:: addWavesetsToEvent
+
+METHOD:: isReady
+
+METHOD:: hash
+
+METHOD:: plot
+argument:: index
+argument:: length
+
+METHOD:: setBuffer
+argument:: argBuffer
+argument:: onComplete
+argument:: minLength
+
+METHOD:: read
+argument:: path
+argument:: channel
+argument:: startFrame
+argument:: numFrames
+argument:: onComplete
+argument:: server
+argument:: minLength
+
+METHOD:: addBuffersToEvent
+
+METHOD:: asBuffer
+argument:: server
+argument:: onComplete
+
+METHOD:: finalizeEvent
+
+METHOD:: getFFT
+argument:: index
+argument:: num
+argument:: size
+argument:: action
+
