@@ -147,12 +147,21 @@ var w = Window("adjust start", Rect(100, 100, 820, 50)).front;
 var sl = Slider(w);
 sl.orientation = \horizontal;
 sl.action = { |view| ~start = view.value.linlin(0, 1, 0, a.size) };
-sl.keyDownAction = { |view, char| if(char == $ ) { Tdef(\u).play } { ~start.post; ",".postln; } };
+sl.keyDownAction = { |view, char| if(char == $ ) { Tdef(\u).play } { ~start.trunc.post; ",".postln; } };
 w.layout = HLayout(sl);
 )
 
 
-
+// e.g. put in a pseq for later on.
+(
+Pseq([
+	610,
+	805,
+	986,
+	298,
+	841,
+], inf);
+)
 
 // patterns
 // using Pwavesets, we can use wavesets in event patterns directly
@@ -218,6 +227,31 @@ Pdef(\x,
 			\start, Pn(Pseries(0, 2, c.size - 1)) + 900,
 			\num, Pn(Pseries(10, 0.6, 80)),
 			\repeats, 9,
+			\legato, 1,
+			\rate, Pbrown(0.5, 2, 0.01, inf),
+			\amp, 0.1,
+			\pan, Pbrown(-0.5, 0.5, 0.001)
+		)
+	)
+).play
+)
+
+// from the values above
+(
+Pdef(\x,
+	Pwavesets(
+		Pbind(
+			\name, \one,
+			\start,
+			Pstutter(120, Pseq([
+				610,
+				805,
+				986,
+				298,
+				841,
+			], inf)),
+			\num, Pn(Pseries(10, 0.6, 80)),
+			\repeats, 1,
 			\legato, 1,
 			\rate, Pbrown(0.5, 2, 0.01, inf),
 			\amp, 0.1,
