@@ -1,5 +1,3 @@
-
-
 /*
 
 WavesetsEvent
@@ -12,7 +10,6 @@ s.boot; // boot the server
 (
 a = WavesetsEvent.read(Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff");
 b = WavesetsEvent.read(Platform.resourceDir +/+ "sounds/a11wlk01.wav");
-c = WavesetsEvent.read("/Volumes/data/archiv/ton/yodel1.aif");
 WavesetsEvent.prepareSynthDefs;
 )
 
@@ -203,13 +200,14 @@ Pwavesets(
 
 
 // for easy experimentation: use a Pdef
+// this crashes the interpreter -- why
 (
 Pdef(\x,
 	Pwavesets(
 		Pbind(
 			\name, \one,
-			\start, Pn(Pseries(0, 2, c.size - 1)),
-			\end, Pn(Pseries(0, 2.6, c.size - 1)),
+			\start, Pn(Pseries(0, 2, a.size - 1)),
+			\end, Pn(Pseries(0, 2.6, a.size - 1)),
 			\repeats, 1,
 			\legato, 1.0,
 			\amp, 0.1,
@@ -224,7 +222,7 @@ Pdef(\x,
 	Pwavesets(
 		Pbind(
 			\name, \one,
-			\start, Pn(Pseries(0, 2, c.size - 1)) + 900,
+			\start, Pn(Pseries(0, 2, a.size - 1)) + 900,
 			\num, Pn(Pseries(10, 0.6, 80)),
 			\repeats, 9,
 			\legato, 1,
