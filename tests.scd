@@ -29,7 +29,7 @@ w = WavesetsEvent.all.at(\y);
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\start, Pn(Pseries(0, 2, 1000)),
 			\end, Pn(Pseries(0, 2.6, 1000)),
@@ -45,7 +45,7 @@ Pdef(\x,
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\startTime, Pn(Pseries(0, 0.002, 10)),
 			\endTime, Pn(Pseries(0.1, 0.002, 10)),
@@ -62,7 +62,7 @@ Pdef(\x,
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\start, Pn(Pseries(0, 20, 100)),
 			\num, 127,
@@ -82,7 +82,7 @@ Pdef(\x,
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\start, Pbrown(0, WavesetsEvent.all.at(\y).wavesets.numXings, 30),
 			\num, Pbrown(5, 40, 1),
@@ -97,7 +97,7 @@ Pdef(\x,
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\start, Pseries(0, 30, 100),
 			\num, 800,
@@ -114,7 +114,7 @@ Pdef(\x,
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\start, Pseries(0, 50, 300).loop,
 			\num, Pseries(200, -5, 20).loop,
