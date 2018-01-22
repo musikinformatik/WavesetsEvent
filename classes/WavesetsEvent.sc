@@ -36,8 +36,12 @@ AbstractWavesetsEvent {
 		this.finalizeEvent;
 	}
 
+	*findWavesets { |inevent|
+		^inevent.at(\wavesets) ?? { all.at(inevent.at(\name)) }
+	}
+
 	*asEvent { |inevent|
-		var wavesets, name;
+		var wavesets;
 		wavesets = inevent.at(\wavesets);
 		wavesets !? { ^wavesets.asEvent(inevent) };
 		wavesets = all.at(inevent.at(\name));
@@ -192,22 +196,33 @@ WavesetsEvent : AbstractWavesetsEvent {
 	}
 
 	// fft
+	// note that if you send too many requests, the corresponding action may not be called
+	// this is because of the getn implementation, which has no id
 
 	getFFT { |index, num, size, action|
 
 		var real, imag, cosTable, complex;
-		var start, numFrames;
+		var start, numFrames, func;
 		#start, numFrames = this.wavesets.frameFor(index, num, false);
 		size = size ?? { numFrames.nextPowerOfTwo };
-		this.buffer.getn(start, numFrames, { |arr|
+		func = { |arr|
 
-			real = arr.resamp1(size).as(Signal);
+			if(arr.size != size) { arr = arr.resamp1(size) };
+			real = arr.as(Signal);
 			imag = Signal.newClear(size);
 			cosTable = Signal.fftCosTable(size);
 
+
 			complex = fft(real, imag, cosTable);
+
 			action.value(complex, real, imag);
-		})
+		};
+
+		if(buffer.server.isLocal) {
+			this.buffer.loadToFloatArray(start, numFrames, func)
+		} {
+			this.buffer.getToFloatArray(start, numFrames, 0.01, 3, func)
+		};
 	}
 
 
