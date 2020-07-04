@@ -1,6 +1,6 @@
 /*
 
-this doesn't work very well yet.
+experimental.
 
 */
 
