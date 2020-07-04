@@ -10,13 +10,14 @@ WavesetsMultiEvent.prepareSynthDefs;
 b = WavesetsMultiEvent.read("/Volumes/data/archiv/ton/count basie, bill's mill.aiff", [0, 1]);
 
 b.asEvent((start: 800, num: 2000, wsamp: 1)).play;
+b.asEvent((start: 8100, num: 200, wsamp: 1, rate: 2)).play;
 
 b.add(\x);
 
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\start, Pn(Pseries(0, 1, 10000)),
 			\num, 1,
@@ -31,7 +32,7 @@ Pdef(\x,
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\start, Pn(Pseries(0, 2, 1000)),
 			\num, 7,
@@ -46,7 +47,7 @@ Pdef(\x,
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\start, Pbrown(0, 88001, 30),
 			\num, Pbrown(5, 140, 1),
@@ -61,7 +62,7 @@ Pdef(\x,
 
 (
 Pdef(\x,
-	Pws(
+	Pwavesets(
 		Pbind(
 			\start, Pseries(0, 30, 100),
 			\num, 800,

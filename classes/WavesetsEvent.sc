@@ -143,27 +143,28 @@ WavesetsEvent : AbstractWavesetsEvent {
 		if(~wsamp.notNil) { ~amp =  ~wsamp / wavesets.maximumAmp(~start, ~num) };
 	}
 
+	embedNothingToEvent {
+		~type = \rest;
+		~dur = 1.0;
+		~sustain = 0;
+		"start or end of wavesets out of bounds:\n%\n".postf(currentEnvironment);
+	}
+
 	finalizeEvent {
 		var timeScale, reverse;
-		//reverse = ~end < ~start;
 		currentEnvironment.useWithoutParents {
-			~rate = ~rate ? 1.0;
-			if(~rate2.notNil) {
-				timeScale = ~rate + ~rate2 * 0.5;
-				~instrument = ~instrument ? \wvst1gl;
-			} {
-				timeScale = ~rate;
-				~instrument = ~instrument ? \wvst0;
-			};
-			~rate2 = ~rate2 ? 1.0;
-
 			if(~numFrames <= 0) {
-				~type = \rest;
-				~dur = 1.0;
-				~sustain = 0;
-				"start or end of wavesets out of bounds:\n%\n".postf(currentEnvironment);
+				this.embedNothingToEvent
 			} {
-
+				~rate = ~rate ? 1.0;
+				if(~rate2.notNil) {
+					timeScale = ~rate + ~rate2 * 0.5;
+					~instrument = ~instrument ? \wvst1gl;
+				} {
+					timeScale = ~rate;
+					~instrument = ~instrument ? \wvst0;
+				};
+				~rate2 = ~rate2 ? 1.0;
 				~sustain = ~sustain ?? {
 					abs(~numFrames * (~repeats ? 1) / (~sampleRate * timeScale))
 				};
@@ -177,8 +178,6 @@ WavesetsEvent : AbstractWavesetsEvent {
 		};
 
 	}
-
-
 
 
 	plot { |index = 0, length = 1|

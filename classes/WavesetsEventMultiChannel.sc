@@ -37,65 +37,110 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 	isReady { ^wavesetsArray.notNil and: { bufferArray.notNil } }
 
+	// temp.
 	addToEvent {
+		this.addBuffersToEvent;
+		this.addWavesetsToEvent;
+		this.finalizeEvent;
+	}
+
+
+	addBuffersToEvent {
+		~buf = bufferArray.collect { |x| x.bufnum };
+		~sampleRate = bufferArray[0].sampleRate;
+	}
+
+	// this can be refactored eventually by passing the wavesets as an argument
+	addWavesetsToEvent {
 		var startWs, theseXings;
 		var lastIndex = wavesetsArray.size - 1;
-		var guide = (~guide? 0).clip(0, lastIndex);
-		var guideWavesets = wavesetsArray[guide];
-		var useFrac = ~useFrac ? true;
+		var guideWavesets;
 
-		~buf = bufferArray;
-		~sampleRate = bufferArray[0].sampleRate;
+		~guide = (~guide ? 0).clip(0, lastIndex);
+		guideWavesets = wavesetsArray[~guide];
+		~busOffset = (0..lastIndex);
 
 
-		theseXings = if (useFrac) { guideWavesets.fracXings } { guideWavesets.xings };
-		~startTime !? { ~start = guideWavesets.nextCrossingIndex(~startTime * ~sampleRate, useFrac) };
-		~endTime !? { ~end = guideWavesets.nextCrossingIndex(~endTime * ~sampleRate, useFrac) };
+		~useFrac = ~useFrac ? true;
+		theseXings = if (~useFrac) { guideWavesets.fracXings } { guideWavesets.xings };
 
+
+		~startTime !? { ~start = guideWavesets.nextCrossingIndex(~startTime * ~sampleRate, ~useFrac) };
+		~endTime !? { ~end = guideWavesets.nextCrossingIndex(~endTime * ~sampleRate, ~useFrac) };
 		startWs = ~start ? 0;
 
 		~num = if(~end.notNil) { ~end - startWs } { ~num ? 1 };
 		~startFrame = theseXings.clipAt(startWs);
 		~endFrame = theseXings.clipAt(startWs + ~num);
 		~numFrames = absdif(~endFrame, ~startFrame);
-		~amp = if(~wsamp.isNil) { 1.0 } { ~amp =  ~wsamp / guideWavesets.maximumAmp(~start, ~num) };
-
-
-		~allStarts = wavesetsArray.collect { |each, i|
-			if(guide == i) {
-				~startFrame
-			} {
-				each.nextCrossing(~startFrame, useFrac)
-			};
-		};
-
-		~allEnds = wavesetsArray.collect { |each, i|
-			if(guide == i) {
-				~endFrame
-			} {
-				each.prevCrossing(~endFrame, useFrac)
-			};
-		};
-
-		~sampleDur = bufferArray[guide].sampleRate.reciprocal;
-		~lag = ~allStarts - ~startFrame * ~sampleDur;
-		~rate = ~rate ? 1.0;
-
-		~startFrame = ~allStarts;
-		~endFrame = ~allEnds;
-		~sustain = (~endFrame - ~startFrame) * ~sampleDur * (~repeats ? 1);
-
-		currentEnvironment.useWithoutParents {
-			~legato !? {
-				~dur = ~sustain[guide] / ~legato;
-				if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
-			};
-		};
-
-		~busOffset = (0..lastIndex);
-		~instrument = if(~rate2.notNil) { \wvst1glmulti } { \wvst0multi }
+		if(~wsamp.notNil) { ~amp =  ~wsamp / guideWavesets.maximumAmp(~start, ~num) };
 
 	}
+
+
+	finalizeEvent {
+		var timeScale, reverse;
+
+		currentEnvironment.useWithoutParents {
+			//if(~numFrames <= 0) { // this is an array here
+			if(false) {
+				this.embedNothingToEvent
+			} {
+				// this is almost the same as in superclass
+				~rate = ~rate ? 1.0;
+
+				if(~rate2.notNil) {
+					timeScale = ~rate + ~rate2 * 0.5;
+					~instrument = ~instrument ? \wvst1glmulti;
+				} {
+					timeScale = ~rate;
+					~instrument = ~instrument ? \wvst0multi;
+				};
+				~rate2 = ~rate2 ? 1.0;
+
+
+				// here the difference starts
+
+
+				~allStarts = wavesetsArray.collect { |each, i|
+					if(~guide == i) {
+						~startFrame
+					} {
+						each.nextCrossing(~startFrame, ~useFrac)
+					};
+				};
+
+				~allEnds = wavesetsArray.collect { |each, i|
+					if(~guide == i) {
+						~endFrame
+					} {
+						each.prevCrossing(~endFrame, ~useFrac)
+					};
+				};
+
+				~sampleDur = ~sampleRate.reciprocal;
+				~lag = ~allStarts - ~startFrame * ~sampleDur;
+
+				~startFrame = ~allStarts;
+				~endFrame = ~allEnds;
+
+
+				~sustain = ~sustain ?? {
+					(~endFrame - ~startFrame) * (~repeats ? 1) * ~sampleDur / timeScale
+				};
+
+				~dur ?? {
+					~dur = if(~legato.isNil) { ~sustain } { ~sustain / ~legato };
+					if(~dur.isArray) { ~dur = ~dur[~guide ? 0] };
+					if(~dur < 0.0001) { ~type = \rest }; // this is ad hoc
+				};
+
+
+			}
+		};
+
+	}
+
 
 
 	// equality
