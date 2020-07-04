@@ -19,10 +19,27 @@ b.add(\x);
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pn(Pseries(0, 1, 10000)),
-			\num, 1,
+			\start, Pn(Pseries(0, 10, 10000)),
+			\num, 10,
 			\legato, 1.0,
-			\name, \x
+			\name, \x,
+			\amp, 0.2
+		)
+	)
+).play;
+)
+
+(
+Pdef(\x,
+	Pwavesets(
+		Pbind(
+			\start, Pn(Pseries(0, 10, 10000)) + Pbrown(0, 1, 130, inf) + 14000,
+			\num, 10,
+			\rate, Pbrown(0.8, 1.3, 0.01, inf),
+			\legato, Pbrown(0.8, 1.2, 0.1),
+			\repeats, Pbrown(1, 4, 0.1),
+			\name, \x,
+			\amp, 0.2
 		)
 	)
 ).play;
