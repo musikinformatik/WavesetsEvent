@@ -20,8 +20,24 @@ b.asEvent((start: 8100, num: 200, wsamp: 1, rate: 2)).play;
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pn(Pseries(0, 10, 10000)),
-			\num, 10,
+			\start, Pn(Pseries(0, 1, 10000)),
+			\num, 1,
+			\legato, 1.0,
+			\name, \x,
+			\amp, 0.2
+		)
+	)
+).play;
+)
+
+// same with the other channel as a guide
+(
+Pdef(\x,
+	Pwavesets(
+		Pbind(
+			\start, Pn(Pseries(0, 1, 10000)),
+			\num, 1,
+			\guide, 1,
 			\legato, 1.0,
 			\name, \x,
 			\amp, 0.2
