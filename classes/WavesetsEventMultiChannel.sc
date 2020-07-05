@@ -61,6 +61,7 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		~busOffset = (0..lastIndex);
 
 
+		// from here on it is the same as in the mono version, just using guideWavesets
 		~useFrac = ~useFrac ? true;
 		theseXings = if (~useFrac) { guideWavesets.fracXings } { guideWavesets.xings };
 
@@ -114,6 +115,8 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 					if(~guide == i) {
 						~endFrame
 					} {
+						// this may lead to reversals, one would think,
+						// but it works better than looking for the next crossing.
 						each.prevCrossing(~endFrame, ~useFrac)
 					};
 				};

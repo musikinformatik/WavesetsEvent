@@ -8,11 +8,12 @@ experimental.
 s.boot;
 WavesetsMultiEvent.prepareSynthDefs;
 b = WavesetsMultiEvent.read("/Volumes/data/archiv/ton/count basie, bill's mill.aiff", [0, 1]);
+b.add(\x);
 
 b.asEvent((start: 800, num: 2000, wsamp: 1)).play;
 b.asEvent((start: 8100, num: 200, wsamp: 1, rate: 2)).play;
 
-b.add(\x);
+
 
 
 (
