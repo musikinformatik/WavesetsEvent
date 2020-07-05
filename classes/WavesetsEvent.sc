@@ -166,8 +166,8 @@ WavesetsEvent : AbstractWavesetsEvent {
 				};
 				~rate2 = ~rate2 ? 1.0;
 				~sustain = ~sustain ?? {
-					abs(~numFrames * (~repeats ? 1) / (~sampleRate * averagePlaybackRate))
-				};
+					abs(~numFrames * (~repeats ? 1).floor.max(1) / (~sampleRate * averagePlaybackRate))
+				};  // todo: if sustain is given, find next crossings
 
 				~dur ?? {
 					~dur = if(~legato.isNil) { ~sustain } { ~sustain / ~legato };

@@ -136,8 +136,8 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 
 				~sustain = ~sustain ?? {
-					~numFrames * (~repeats ? 1) * ~secondsPerFrame
-				};
+					~numFrames * (~repeats ? 1).floor.max(1) * ~secondsPerFrame
+				}; // todo: if sustain is given, find next crossings
 
 				~dur ?? {
 					~dur = if(~legato.isNil) { ~sustain } { ~sustain / ~legato };
