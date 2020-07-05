@@ -43,7 +43,9 @@ AbstractWavesetsEvent {
 	*asEvent { |inevent|
 		var wavesets;
 		wavesets = inevent.at(\wavesets);
-		wavesets !? { ^wavesets.asEvent(inevent) };
+		wavesets !? {
+			^wavesets.asEvent(inevent)
+		};
 		wavesets = all.at(inevent.at(\name));
 		if(wavesets.isNil) { "no wavesets with this name: %".format(inevent.at(\name)).warn; ^nil };
 		if(wavesets.isReady.not) { "wavesets not initialised: %".format(inevent.at(\name)).warn; ^nil };
