@@ -3,7 +3,7 @@
 
 // more elaborate GUI
 (
-
+WavesetsEvent.prepareSynthDefs;
 ~wavesets = ~wavesets ?? {
 	WavesetsEvent.read(Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff")
 };
