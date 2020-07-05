@@ -80,7 +80,7 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 
 	finalizeEvent {
-		var timeScale, reverse;
+		var averagePlaybackRate, reverse;
 
 		currentEnvironment.useWithoutParents {
 			//if(~numFrames <= 0) { // this is an array here
@@ -91,10 +91,10 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 				~rate = ~rate ? 1.0;
 
 				if(~rate2.notNil) {
-					timeScale = ~rate + ~rate2 * 0.5;
+					averagePlaybackRate = ~rate + ~rate2 * 0.5;
 					~instrument = ~instrument ? \wvst1glmulti;
 				} {
-					timeScale = ~rate;
+					averagePlaybackRate = ~rate;
 					~instrument = ~instrument ? \wvst0multi;
 				};
 				~rate2 = ~rate2 ? 1.0;
@@ -117,19 +117,26 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 					} {
 						// this may lead to reversals, one would think,
 						// but it works better than looking for the next crossing.
-						each.prevCrossing(~endFrame, ~useFrac)
+						//each.prevCrossing(~endFrame, ~useFrac)
+						each.nextCrossing(~endFrame, ~useFrac)
 					};
 				};
 
-				~sampleDur = ~sampleRate.reciprocal;
-				~lag = ~allStarts - ~startFrame * ~sampleDur;
+				~secondsPerFrame = reciprocal(~sampleRate * averagePlaybackRate);
 
+				// lag is built into the standard note event
+				// it is a delay of the onset in seconds
+				// we delay the onsets so the channels match up
+				~lag = (~allStarts - ~startFrame) * ~secondsPerFrame;
+
+				// these are now multichannel
 				~startFrame = ~allStarts;
 				~endFrame = ~allEnds;
+				~numFrames = ~endFrame - ~startFrame;
 
 
 				~sustain = ~sustain ?? {
-					(~endFrame - ~startFrame) * (~repeats ? 1) * ~sampleDur / timeScale
+					~numFrames * (~repeats ? 1) * ~secondsPerFrame
 				};
 
 				~dur ?? {

@@ -151,22 +151,22 @@ WavesetsEvent : AbstractWavesetsEvent {
 	}
 
 	finalizeEvent {
-		var timeScale, reverse;
+		var averagePlaybackRate, reverse;
 		currentEnvironment.useWithoutParents {
 			if(~numFrames <= 0) {
 				this.embedNothingToEvent
 			} {
 				~rate = ~rate ? 1.0;
 				if(~rate2.notNil) {
-					timeScale = ~rate + ~rate2 * 0.5;
+					averagePlaybackRate = ~rate + ~rate2 * 0.5;
 					~instrument = ~instrument ? \wvst1gl;
 				} {
-					timeScale = ~rate;
+					averagePlaybackRate = ~rate;
 					~instrument = ~instrument ? \wvst0;
 				};
 				~rate2 = ~rate2 ? 1.0;
 				~sustain = ~sustain ?? {
-					abs(~numFrames * (~repeats ? 1) / (~sampleRate * timeScale))
+					abs(~numFrames * (~repeats ? 1) / (~sampleRate * averagePlaybackRate))
 				};
 
 				~dur ?? {
