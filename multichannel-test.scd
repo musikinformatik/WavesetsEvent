@@ -4,12 +4,17 @@ experimental.
 
 */
 
+
 // record a stereo soundfile (wait 10 sec)
 (
-{
-	var mod =  SinOsc.ar(XLine.kr([700, 730], 0.01, 10)) * SinOsc.ar(0.4).range(0, 2pi);
-	SinOsc.ar(300, mod) * 0.1
-}.asBuffer(10, fadeTime:0.1, action: { |buffer|
+var f = {
+	var mod = Line.kr(0, 1, 10);
+	var fmod =  SinOsc.ar(mod.linexp(0, 1, [700, 730], 0.01));
+	fmod = fmod * Decay2.ar(Impulse.ar(mod.linexp(0, 1, 1, 16) * [2, 3]), 0.01, 0.08, 2pi, 0.3pi);
+	SinOsc.ar(300, fmod) * 0.1
+};
+
+f.asBuffer(10, fadeTime:0.1, action: { |buffer|
 	buffer.write("~/sc-wavesets-test.aiff".standardizePath);
 	"... finished writing ....".postln;
 	buffer.free;
@@ -24,9 +29,9 @@ b = WavesetsMultiEvent.read("~/sc-wavesets-test.aiff".standardizePath, [0, 1], m
 b.add(\some);
 WavesetsMultiEvent.prepareSynthDefs;
 
-b.asEvent((start: 800, num: 2000)).play;
-b.asEvent((start: 810, num: 2000, rate: 2)).play;
 
+b.asEvent((start: 0, num: 2000)).play;
+b.asEvent((start: 0, num: 2000, rate: 2)).play;
 
 
 (
