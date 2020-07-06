@@ -1,6 +1,3 @@
-/*
-doesn't work yet
-*/
 
 
 WavesetsMultiEvent : AbstractWavesetsEvent {
