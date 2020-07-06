@@ -52,7 +52,7 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 	// this can be refactored eventually by passing the wavesets as an argument
 	addWavesetsToEvent {
-		var startWs, theseXings;
+		var startWs, endWs, theseXings;
 		var lastIndex = wavesetsArray.size - 1;
 		var guideWavesets;
 
@@ -69,10 +69,16 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		~startTime !? { ~start = guideWavesets.nextCrossingIndex(~startTime * ~sampleRate, ~useFrac) };
 		~endTime !? { ~end = guideWavesets.nextCrossingIndex(~endTime * ~sampleRate, ~useFrac) };
 		startWs = ~start ? 0;
+		~num = if(~end.notNil) { max(~end - startWs, 1) } { ~num ? 1 };
+		endWs = startWs + ~num;
 
-		~num = if(~end.notNil) { ~end - startWs } { ~num ? 1 };
-		~startFrame = theseXings.clipAt(startWs);
-		~endFrame = theseXings.clipAt(startWs + ~num);
+		if((~wrap == true) and: { endWs > theseXings.lastIndex }) { // todo: check also for ~num < 0
+			startWs = 0;
+			endWs = startWs + ~num;
+		};
+
+		~startFrame = theseXings.clipAt(startWs.asInteger);
+		~endFrame = theseXings.clipAt(endWs.asInteger);
 		~numFrames = absdif(~endFrame, ~startFrame);
 		if(~wsamp.notNil) { ~amp =  ~wsamp / guideWavesets.maximumAmp(~start, ~num) };
 
@@ -83,15 +89,15 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		var averagePlaybackRate, reverse;
 
 		currentEnvironment.useWithoutParents {
-			//if(~numFrames <= 0) { // this is an array here
-			if(false) {
-				this.embedNothingToEvent
+			if(~numFrames <= 0) { // this is an array here
+				~type = \rest;
+				"start or end of wavesets out of bounds:\n%\n".postf(currentEnvironment);
 			} {
 				// this is almost the same as in superclass
 				~rate = ~rate ? 1.0;
 
 				if(~rate2.notNil) {
-					averagePlaybackRate = ~rate + ~rate2 * 0.5;
+					averagePlaybackRate = ~rate + ~rate2 * 0.5; // TODO: check for different signs
 					~instrument = ~instrument ? \wvst1glmulti;
 				} {
 					averagePlaybackRate = ~rate;
@@ -122,7 +128,7 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 					};
 				};
 
-				~secondsPerFrame = reciprocal(~sampleRate * averagePlaybackRate);
+				~secondsPerFrame = reciprocal(~sampleRate * averagePlaybackRate.abs);
 
 				// lag is built into the standard note event
 				// it is a delay of the onset in seconds

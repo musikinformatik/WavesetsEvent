@@ -145,18 +145,12 @@ WavesetsEvent : AbstractWavesetsEvent {
 		if(~wsamp.notNil) { ~amp =  ~wsamp / wavesets.maximumAmp(~start, ~num) };
 	}
 
-	embedNothingToEvent {
-		~type = \rest;
-		~dur = 1.0;
-		~sustain = 0;
-		"start or end of wavesets out of bounds:\n%\n".postf(currentEnvironment);
-	}
 
 	finalizeEvent {
 		var averagePlaybackRate, reverse;
 		currentEnvironment.useWithoutParents {
 			if(~numFrames <= 0) {
-				this.embedNothingToEvent
+				~type = \rest
 			} {
 				~rate = ~rate ? 1.0;
 				if(~rate2.notNil) {
@@ -168,7 +162,7 @@ WavesetsEvent : AbstractWavesetsEvent {
 				};
 				~rate2 = ~rate2 ? 1.0;
 				~sustain = ~sustain ?? {
-					abs(~numFrames * (~repeats ? 1).floor.max(1) / (~sampleRate * averagePlaybackRate))
+					abs(~numFrames * (~repeats ? 1).floor.max(1) / (~sampleRate * averagePlaybackRate.abs))
 				};  // todo: if sustain is given, find next crossings
 
 				~dur ?? {
