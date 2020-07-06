@@ -178,7 +178,7 @@ Wavesets2 {
 		var rWindowSize = windowSize.reciprocal;
 		var peakIdxs; //return value
 		var idxs = List[];
-		var a;
+		var a, hScaled;
 
 		// peak estimation function
 		if(s1.isNil) {
@@ -201,11 +201,13 @@ Wavesets2 {
 		aAbs = a.abs;
 		mean = aAbs.mean;
 		sDev = aAbs.stdDev;
+		hScaled = h * sDev;
 
 		a.do { |val, i| // collect all indices that are concidered big
-			if ((a[i] > 0) and: { (a[i]-mean) > (h*sDev) }) { idxs.add(i) }
+			if ((a[i] > 0) and: { (a[i]-mean) > hScaled }) { idxs.add(i) }
 		};
-		peaksSize = idxs.size.postln;
+
+		peaksSize = idxs.size;
 
 		// retain only one peak of any set of peaks within windowSize of each other
 		peakIdxs = idxs.inject([0], { |last, now, i|
