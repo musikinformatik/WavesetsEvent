@@ -9,6 +9,7 @@ Wavesets2 {
 	var <minSet, <maxSet, <avgLength, <sqrAvgLength;
 	var <minAmp, <maxAmp, <avgAmp, <sqrAvgAmp;
 
+	classvar <>defaultMinLength = 10; // minLength reasonable? => 4.4 kHz maxFreq.
 
 	*fromBuffer { |buffer, onComplete, minLength|
 		^this.new.fromBuffer(buffer, onComplete, minLength)
@@ -97,7 +98,7 @@ Wavesets2 {
 		var maxSamp = 0.0, minSamp = 0.0;
 		var maxAmpIndex, minAmpIndex, wavesetAmp, frac;
 
-		minLength = minLength ? 10; // minLength reasonable? => 4.4 kHz maxFreq.
+		minLength = minLength ? defaultMinLength; // minLength reasonable? => 4.4 kHz maxFreq.
 
 		// find xings, store indices, lengths, and amps.
 
