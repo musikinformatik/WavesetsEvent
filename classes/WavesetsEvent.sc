@@ -140,6 +140,12 @@ WavesetsEvent : AbstractWavesetsEvent {
 		startWs = ~start ? 0;
 		~num = if(~end.notNil) { max(~end - startWs, 1) } { ~num ? 1 };
 		endWs = startWs + ~num;
+
+		if((~wrap == true) and: { endWs > theseXings.lastIndex }) { // todo: check also for ~num < 0
+			startWs = 0;
+			endWs = startWs + ~num;
+		};
+
 		~startFrame = theseXings.clipAt(startWs);
 		~endFrame = theseXings.clipAt(endWs);
 		~numFrames = ~endFrame - ~startFrame;
