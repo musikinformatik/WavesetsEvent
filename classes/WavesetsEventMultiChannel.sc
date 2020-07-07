@@ -69,11 +69,6 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		~num = if(~end.notNil) { max(~end - startWs, 1) } { ~num ? 1 };
 		endWs = startWs + ~num;
 
-		if((~wrap == true) and: { endWs > theseXings.lastIndex }) { // todo: check also for ~num < 0
-			startWs = 0;
-			endWs = startWs + ~num;
-		};
-
 		~startFrame = theseXings.clipAt(startWs.asInteger);
 		~endFrame = theseXings.clipAt(endWs.asInteger);
 		~numFrames = absdif(~endFrame, ~startFrame);
