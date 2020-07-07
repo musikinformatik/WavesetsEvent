@@ -25,37 +25,43 @@ f.asBuffer(10, fadeTime:0.1, action: { |buffer|
 
 
 s.boot;
-
-b = WavesetsMultiEvent.read("~/sc-wavesets-test.aiff".standardizePath, [0, 1], minLength: 10);
-b.add(\some);
+b = WavesetsMultiEvent.read("~/sc-wavesets-test.aiff".standardizePath, [0, 1], minLength: 10).add(\some);
 WavesetsMultiEvent.prepareSynthDefs;
 
+// get some information
+b.wavesetsArray[0].size; // 3271
+b.wavesetsArray[1].size; // 3270
+b.bufferArray[0].duration // 10
 
 b.asEvent((start: 0, num: 2000)).play;
 b.asEvent((start: 0, num: 2000, rate: 2)).play;
 
 
+Pwsget(\some).asStream.next
+WavesetsEvent.all.at(\some).xings
+
+// signal reconstruction
 (
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pn(Pseries(0, 1, 10000)),
+			\name, \some,
+			\start, Pn(Pseries(0, 1, 3270)),
 			\rate, 1,
 			\num, 1,
 			\legato, 1.0,
-			\name, \some,
 			\amp, 0.1
 		)
 	)
 ).play;
 )
 
-// same with the other channel as a guide
+// signal reconstruction with the other channel as a guide
 (
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pn(Pseries(0, 1, 10000)),
+			\start, Pn(Pseries(0, 1, 3270)),
 			\num, 1,
 			\guide, 1,
 			\legato, 1.0,
@@ -71,11 +77,11 @@ Pdef(\x,
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pn(Pseries(0, 1, 3000)) + Pbrown(0, 230, 12, inf),
-			\num, 1,
+			\start, Pn(Pseries(0, 1, 3000)) + Pbrown(0, 270, 12, inf),
+			\num, 2,
 			\rate, Pbrown(0.8, 1.3, 0.01, inf),
 			\legato, Pbrown(0.8, 1.2, 0.1),
-			\repeats, Pbrown(1, 14, 0.1),
+			\repeats, Pbrown(0, 1, 0.1).linexp(0, 1, 1, 14),
 			\name, \some,
 			\amp, 0.2
 		)
@@ -89,9 +95,24 @@ Pdef(\x,
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pn(Pseries(0, 5, 1000)),
-			\num, 7,
+			\start, Pn(Pseries(0, 2, 3270 - 27)),
+			\num, 27,
 			\legato, 1.0,
+			\name, \some
+		)
+	)
+).play;
+)
+
+(
+Pdef(\x,
+	Pwavesets(
+		Pbind(
+			\startTime, Ptime.new.wrap(0, 9.9),
+			\num, 2,
+			\legato, 0.4,
+			\rate, 1.3,
+			\wsamp, 0.1,
 			\name, \some
 		)
 	)
@@ -103,7 +124,7 @@ Pdef(\x,
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pbrown(0, 2001, 30),
+			\start, Pbrown(0, 3270 - 140, 30),
 			\num, Pbrown(5, 140, 1),
 			\legato, 1.0,
 			\name, \some
