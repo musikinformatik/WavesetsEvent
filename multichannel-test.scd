@@ -37,7 +37,6 @@ b.asEvent((start: 0, num: 2000)).play;
 b.asEvent((start: 0, num: 2000, rate: 2)).play;
 
 
-Pwsget(\some).asStream.next
 WavesetsEvent.all.at(\some).xings
 
 // signal reconstruction
