@@ -135,13 +135,21 @@ WavesetsEvent : AbstractWavesetsEvent {
 		var theseXings, startWs, endWs, useFrac;
 		useFrac = ~useFrac ? true;
 		theseXings = if (useFrac) { wavesets.fracXings } { wavesets.xings };
-		~startTime !? { ~start = wavesets.nextCrossingIndex(~startTime * ~sampleRate, useFrac) };
-		~endTime !? { ~end = wavesets.nextCrossingIndex(~endTime * ~sampleRate, useFrac) };
-		startWs = ~start ? 0;
-		~num = if(~end.notNil) { max(~end - startWs, 1) } { ~num ? 1 };
-		endWs = startWs + ~num;
 
+		~startTime !? { ~start = wavesets.nextCrossingIndex(~startTime * ~sampleRate, useFrac) };
+		startWs = ~start ? 0;
 		~startFrame = theseXings.clipAt(startWs);
+
+
+		~endTime !? { ~end = wavesets.nextCrossingIndex(~endTime * ~sampleRate, useFrac) };
+
+		if(~wsustain.notNil) {
+			endWs = wavesets.nextCrossingIndex(~startFrame + (~sustain.value * ~sampleRate), ~useFrac);
+		} {
+			~num = if(~end.notNil) { max(~end - startWs, 1) } { ~num ? 1 };
+			endWs = startWs + ~num;
+		};
+
 		~endFrame = theseXings.clipAt(endWs);
 		~numFrames = ~endFrame - ~startFrame;
 		if(~wsamp.notNil) { ~amp =  ~wsamp / wavesets.maximumAmp(~start, ~num) };

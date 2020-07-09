@@ -64,12 +64,19 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 
 		~startTime !? { ~start = guideWavesets.nextCrossingIndex(~startTime * ~sampleRate, ~useFrac) };
-		~endTime !? { ~end = guideWavesets.nextCrossingIndex(~endTime * ~sampleRate, ~useFrac) };
 		startWs = ~start ? 0;
-		~num = if(~end.notNil) { max(~end - startWs, 1) } { ~num ? 1 };
-		endWs = startWs + ~num;
-
 		~startFrame = theseXings.clipAt(startWs.asInteger);
+
+
+		~endTime !? { ~end = guideWavesets.nextCrossingIndex(~endTime * ~sampleRate, ~useFrac) };
+
+		if(~wsustain.notNil) {
+			endWs = guideWavesets.nextCrossingIndex(~startFrame + (~sustain.value * ~sampleRate), ~useFrac);
+		} {
+			~num = if(~end.notNil) { max(~end - startWs, 1) } { ~num ? 1 };
+			endWs = startWs + ~num;
+		};
+
 		~endFrame = theseXings.clipAt(endWs.asInteger);
 		~numFrames = absdif(~endFrame, ~startFrame);
 		if(~wsamp.notNil) { ~amp =  ~wsamp / guideWavesets.maximumAmp(~start, ~num) };

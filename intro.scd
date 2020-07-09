@@ -45,6 +45,7 @@ startTime: where to start in the file - will be rounded to the next waveset (if 
 endTime: where to end in the file - will be rounded to the next waveset (if given, overrides start)
 amp: scale the amplitude of the original sound
 wsamp: normalize the amplitude to that value
+wsustain: sustain time - will be rounded to the next waveset (if given, overrides end and num)
 rate: playback speed of the audio file
 rate2: end playback speed of the audio file (will create a linear glisson sweep)
 pan: stereo panorama position
