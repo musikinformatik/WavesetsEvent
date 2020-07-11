@@ -7,7 +7,7 @@ WavesetsEvent
 s.boot; // boot the server
 
 
-// if you like, record a soundfile (wait 10 sec)
+// if you like, record a soundfile (wait 8 sec)
 (
 var time = 8;
 var f = {
