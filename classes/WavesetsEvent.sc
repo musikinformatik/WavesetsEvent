@@ -152,6 +152,9 @@ WavesetsEvent : AbstractWavesetsEvent {
 
 		~endFrame = theseXings.clipAt(endWs);
 		~numFrames = ~endFrame - ~startFrame;
+		if(~fixsustain.notNil) {
+			~rate = ~numFrames / (~fixsustain * ~sampleRate)
+		};
 		if(~wsamp.notNil) { ~amp =  ~wsamp / wavesets.maximumAmp(~start, ~num) };
 	}
 

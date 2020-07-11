@@ -6,10 +6,30 @@ WavesetsEvent
 
 s.boot; // boot the server
 
+
+// if you like, record a soundfile (wait 10 sec)
+(
+var time = 8;
+var f = {
+	var mod = Line.kr(0, 1, time);
+	var imp = Impulse.ar(mod.linexp(0, 1, 1, 16) * [2, 3]);
+	var fmod =  SinOsc.ar(mod.linexp(0, 1, 244 * rrand(0.4, 1.4), 0.01));
+	fmod = fmod * Decay2.ar(imp, 0.02, 0.08, 2pi, 0.3pi);
+	SinOsc.ar(300 + (mod * 145), fmod) * 0.1
+};
+
+f.asBuffer(time, fadeTime:0.1, action: { |buffer|
+	buffer.write(Platform.resourceDir +/+ "sc-wavesets-test-mono.aiff");
+	"... finished writing ....".postln;
+	buffer.free;
+}
+);
+)
+
 // load two files for wavesets
 (
 a = WavesetsEvent.read(Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff");
-b = WavesetsEvent.read(Platform.resourceDir +/+ "sounds/a11wlk01.wav");
+b = WavesetsEvent.read(Platform.resourceDir +/+ "sc-wavesets-test-mono.aiff");
 WavesetsEvent.prepareSynthDefs;
 )
 
@@ -20,10 +40,11 @@ b.size;
 // play some.
 // you pass an event with parameters and get back an event with parameters
 a.asEvent((start: 76, end: 899)).play;
+b.asEvent((start: 76, end: 899)).play;
 a.asEvent((start: 136, num: 99)).play;
 a.asEvent((start: 136, num: 9911, rate: -1)).play; // backwards
 
-
+a.buffer.play
 
 // this sounds better in a repetition:
 (
@@ -37,6 +58,7 @@ Tdef(\u, {
 
 // what parameters can you pass?
 
+
 start: from which waveset to start
 num: how many wavesets to play
 end: up to which waveset to play (if given, overrides num)
@@ -46,6 +68,7 @@ endTime: where to end in the file - will be rounded to the next waveset (if give
 amp: scale the amplitude of the original sound
 wsamp: normalize the amplitude to that value
 wsustain: sustain time - will be rounded to the next waveset (if given, overrides end and num)
+fixsustain: sustain time - wavesets will be rate adjusted so it matches the sustain
 rate: playback speed of the audio file
 rate2: end playback speed of the audio file (will create a linear glisson sweep)
 pan: stereo panorama position
@@ -201,12 +224,11 @@ Pwavesets(
 
 
 // for easy experimentation: use a Pdef
-// this crashes the interpreter -- why
 (
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\name, \one,
+			\name, Prand([\one, \two], inf),
 			\start, Pn(Pseries(0, 2, a.size - 1)),
 			\end, Pn(Pseries(0, 2.6, a.size - 1)),
 			\repeats, 1,

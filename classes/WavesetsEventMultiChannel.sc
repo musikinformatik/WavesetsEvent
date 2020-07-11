@@ -32,6 +32,10 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		bufferArray = buffers;
 	}
 
+	size { ^wavesetsArray.collect(_.size).minItem }
+
+	server { ^bufferArray.first.server }
+
 	isReady { ^wavesetsArray.notNil and: { bufferArray.notNil } }
 
 	// temp.
@@ -79,6 +83,9 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 		~endFrame = theseXings.clipAt(endWs.asInteger);
 		~numFrames = absdif(~endFrame, ~startFrame);
+		if(~fixsustain.notNil) {
+			~rate = ~numFrames / (~fixsustain * ~sampleRate)
+		};
 		if(~wsamp.notNil) { ~amp =  ~wsamp / guideWavesets.maximumAmp(~start, ~num) };
 
 	}
