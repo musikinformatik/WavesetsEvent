@@ -243,6 +243,13 @@ Wavesets2 {
 
 	}
 
+	nextStartCrossingIndex { |frame, useFrac = true|
+		var theseXings = if (useFrac) { fracXings } { xings };
+		var index = theseXings.indexOfGreaterThan(frame);
+		var lastIndex = theseXings.lastIndex - 1;
+		^if(index.notNil) { min(index, lastIndex) } { lastIndex }
+	}
+
 
 	// equality
 

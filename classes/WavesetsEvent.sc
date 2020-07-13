@@ -117,6 +117,8 @@ WavesetsEvent : AbstractWavesetsEvent {
 
 	size { ^wavesets.size }
 
+	duration { ^buffer.duration }
+
 	server { ^buffer.server }
 
 	isReady { ^wavesets.notNil and: { buffer.notNil } }
@@ -136,7 +138,7 @@ WavesetsEvent : AbstractWavesetsEvent {
 		useFrac = ~useFrac ? true;
 		theseXings = if (useFrac) { wavesets.fracXings } { wavesets.xings };
 
-		~startTime !? { ~start = wavesets.nextCrossingIndex(~startTime * ~sampleRate, useFrac) };
+		~startTime !? { ~start = wavesets.nextStartCrossingIndex(~startTime * ~sampleRate, useFrac) };
 		startWs = ~start ? 0;
 		~startFrame = theseXings.clipAt(startWs);
 

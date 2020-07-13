@@ -197,6 +197,11 @@ b.add(\two);
 // then you can access by name:
 Pwavesets((start: 56, num: 78, name: \one)).play;
 
+// currentSize returns a stream with the wavesets size for the current name
+
+Pwavesets(Pbind(\name, \one, \start, Pseries(0, 1, Pwavesets.currentSize - 1))).play;
+Pwavesets(Pbind(\name, Pstutter(30, Prand([\one, \two], inf)), \start, Pseries(0, 1, Pwavesets.currentSize - 1))).play;
+
 
 (
 Pwavesets(

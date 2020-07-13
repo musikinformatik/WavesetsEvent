@@ -69,7 +69,7 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 		theseXings = if (~useFrac) { guideWavesets.fracXings } { guideWavesets.xings };
 
 
-		~startTime !? { ~start = guideWavesets.nextCrossingIndex(~startTime * ~sampleRate, ~useFrac) };
+		~startTime !? { ~start = guideWavesets.nextStartCrossingIndex(~startTime * ~sampleRate, ~useFrac) };
 		startWs = ~start ? 0;
 		~startFrame = theseXings.clipAt(startWs.asInteger);
 

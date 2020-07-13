@@ -47,11 +47,9 @@ Pdef(\x,
 	Pwavesets(
 		Pbind(
 			\name, \some,
-			\start, Pn(Pseries(0, 1, b.size - 1)),
+			\start, Pn(Pseries(0, 1, Pwavesets.currentSize - 1)),
 			\rate, 1,
-			\num, 1,
-			\legato, 1.0,
-			//\amp, 0.1
+			\num, 1
 		)
 	)
 ).play;
@@ -62,12 +60,10 @@ Pdef(\x,
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pn(Pseries(0, 1, 3270)),
-			\num, 1,
-			\guide, 1,
-			\legato, 1.0,
 			\name, \some,
-			\amp, 0.2
+			\start, Pn(Pseries(0, 1, Pwavesets.currentSize - 1)),
+			\num, 1,
+			\guide, 1
 		)
 	)
 ).play;
@@ -78,41 +74,43 @@ Pdef(\x,
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pn(Pseries(0, 1, 3000)) + Pbrown(0, 270, 12, inf),
+			\name, \some,
+			\start, Pn(Pseries(0, 1, Pwavesets.currentSize - 270 - 1)) + Pbrown(0, 270, 12, inf),
 			\num, 2,
 			\rate, Pbrown(0.8, 1.3, 0.01, inf),
 			\legato, Pbrown(0.8, 1.2, 0.1),
 			\repeats, Pbrown(0, 1, 0.1).linexp(0, 1, 1, 14),
-			\name, \some,
-			\amp, 0.2
+			\amp, 0.1
 		)
 	)
 ).play;
 )
 
+// fixsustain
 (
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\startTime, Ptime() % 7,
+			\name, \some,
+			\start, Pn(Pseries(0, 1, Pwavesets.currentSize - 270 - 1)) + Pbrown(0, 270, 12, inf),
 			\num, 1,
-			\fixsustain, 1/400,
+			\fixsustain, 1/300,
+			\amp, [0.1, 0],
 			\legato, 1.0,
+		)
+	)
+).play;
+)
+
+
+(
+Pdef(\x,
+	Pwavesets(
+		Pbind(
 			\name, \some,
-		)
-	)
-).play;
-)
-
-
-(
-Pdef(\x,
-	Pwavesets(
-		Pbind(
-			\start, Pn(Pseries(0, 2, 3270 - 27)),
+			\start, Pn(Pseries(0, 2, Pwavesets.currentSize - 1)),
 			\num, 27,
-			\legato, 1.0,
-			\name, \some
+			\legato, 1.0
 		)
 	)
 ).play;
@@ -122,11 +120,11 @@ Pdef(\x,
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\startTime, Ptime.new.wrap(0, 9.9),
-			\num, 2,
-			\legato, 0.4,
-			\rate, 1.3,
-			\name, \some
+			\name, \some,
+			\startTime, (Ptime() * 0.02).wrap(0, Pwavesets.currentDuration),
+			\num, 1,
+			\legato, 1,
+			\rate, 1
 		)
 	)
 ).play;
@@ -137,10 +135,10 @@ Pdef(\x,
 Pdef(\x,
 	Pwavesets(
 		Pbind(
-			\start, Pbrown(0, 3270 - 140, 30),
+			\name, \some,
+			\start, Pbrown(0, Pwavesets.currentSize - 140 -1, 30),
 			\num, Pbrown(5, 140, 1),
 			\legato, 1.0,
-			\name, \some
 		)
 	)
 ).play;
@@ -151,12 +149,12 @@ Pdef(\x,
 Pdef(\x,
 	Pwavesets(
 		Pbind(
+			\name, \some,
 			\start, Pseries(0, 30, 100),
 			\num, 80,
 			\rate, 1,
 			\rate2, 2, // here still some glitches
-			\legato, 0.5,
-			\name, \some
+			\legato, 0.5
 		)
 	)
 ).play;
