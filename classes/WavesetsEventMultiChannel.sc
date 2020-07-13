@@ -34,6 +34,8 @@ WavesetsMultiEvent : AbstractWavesetsEvent {
 
 	size { ^wavesetsArray.collect(_.size).minItem }
 
+	duration { ^bufferArray.collect(_.duration).minItem }
+
 	server { ^bufferArray.first.server }
 
 	isReady { ^wavesetsArray.notNil and: { bufferArray.notNil } }
