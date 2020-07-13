@@ -175,7 +175,11 @@ Tdef(\mrkov, {
 }).play
 )
 
-// try different pecision levels
+
+// generate different pecision levels
+// try and fine tune this:
+// it only works for the right parameters, and they differ from case to case
+
 
 // original
 ~keyList = ~makeKeys.(1/32, 64); // resolution, size
