@@ -14,8 +14,6 @@ AbstractWavesetsEvent {
 	}
 
 	add { |name|
-		var old = all.at(name);
-		old.free;
 		all.put(name, this)
 	}
 
