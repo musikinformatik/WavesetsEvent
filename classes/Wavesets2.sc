@@ -2,7 +2,7 @@
 
 Wavesets2 {
 
-	var <signal;
+	var <signal, <buffer;
 
 	var	<xings, <lengths, <fracXings, <fracLengths;
 	var <amps, <maxima, <minima;
@@ -15,7 +15,8 @@ Wavesets2 {
 		^this.new.fromBuffer(buffer, onComplete, minLength)
 	}
 
-	fromBuffer { |buffer, onComplete, minLength|
+	fromBuffer { |argBuffer, onComplete, minLength|
+		buffer = argBuffer;
 		buffer.loadToFloatArray(0, -1, { |array|
 			this.setSignal(array, minLength);
 			onComplete.value(this);
@@ -51,7 +52,7 @@ Wavesets2 {
 		var endFrame = theseXings.clipAt(startWs + numWs);
 		var length = absdif(endFrame, startFrame);
 
-		^[startFrame, length]
+		^[startFrame, length, length/buffer.sampleRate]
 	}
 
 	maximumAmp { |index, length=1|
@@ -59,6 +60,10 @@ Wavesets2 {
 		if(length == 1) { ^amps[index] ? 0.0 };
 		length.do { |i| maxItem = max(maxItem, amps[index + i] ? 0.0) };
 		^maxItem
+	}
+	// backwards compatibility
+	ampFor { |index, length=1|
+		^this.maximumAmp(index, length)
 	}
 
 	plot { |index = 0, length = 1, sampleRate|
