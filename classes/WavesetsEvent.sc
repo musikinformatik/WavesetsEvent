@@ -83,6 +83,7 @@ WavesetsEvent : AbstractWavesetsEvent {
 
 
 	var <buffer, <wavesets;
+	var <>restDur = 0.01; // when waveset contains no frames
 
 	*read { |path, channel = 0, startFrame = 0, numFrames = -1, onComplete, server, minLength|
 		^this.new.readChannel(path, channel, startFrame, numFrames, onComplete, server, minLength)
@@ -163,7 +164,8 @@ WavesetsEvent : AbstractWavesetsEvent {
 		var averagePlaybackRate, reverse;
 		currentEnvironment.useWithoutParents {
 			if(~numFrames <= 0) {
-				~type = \rest
+				~type = \rest;
+				~dur = restDur;
 			} {
 				~rate = ~rate ? 1.0;
 				if(~rate2.notNil) {
