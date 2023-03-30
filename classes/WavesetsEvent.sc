@@ -65,8 +65,8 @@ AbstractWavesetsEvent {
 
 
 	// backwards compatibility
-	eventFor { |startWs=0, numWs=5, repeats=3, playRate=1, useFrac = true|
-		^this.asEvent((start: startWs, length: numWs, repeats: repeats, rate: playRate, useFrac: useFrac))
+	eventFor { |startWs=0, numWs=5, repeats=3, rate=1, useFrac = true|
+		^this.asEvent((start: startWs, num: numWs, repeats: repeats, rate: rate, useFrac: useFrac))
 	}
 
 	toBuffer { |buffer, onComplete|

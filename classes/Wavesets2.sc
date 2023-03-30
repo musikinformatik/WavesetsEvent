@@ -18,7 +18,7 @@ Wavesets2 {
 	fromBuffer { |argBuffer, onComplete, minLength|
 		buffer = argBuffer;
 		buffer.loadToFloatArray(0, -1, { |array|
-			this.setSignal(array, minLength);
+			this.setSignal(array, minLength, buffer);
 			onComplete.value(this);
 		})
 	}
@@ -36,8 +36,9 @@ Wavesets2 {
 		this.analyse;
 	}
 
-	setSignal { |sig, minLength|
+	setSignal { |sig, minLength, argBuffer|
 		signal = sig;
+		buffer = argBuffer;
 		this.analyse(minLength);
 	}
 
@@ -51,6 +52,7 @@ Wavesets2 {
 		var startFrame = theseXings.clipAt(startWs);
 		var endFrame = theseXings.clipAt(startWs + numWs);
 		var length = absdif(endFrame, startFrame);
+		var sustain = length / buffer.sampleRate;
 
 		^[startFrame, length, length/buffer.sampleRate]
 	}
