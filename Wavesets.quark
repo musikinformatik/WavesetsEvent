@@ -2,5 +2,6 @@
 	\name: 			"Wavesets2",
 	\summary:		"Analysis and synthesis with soundfile fragments as proposed by T. Wishart. A variant of the original Wavesets",
 	\author: 		"Alberto de Campo, Till Bovermann, Julian Rohrhuber",
-	\organization: 	"UdK Berlin, IMM Duesseldorf"
+	\organization: 	"UdK Berlin, IMM Duesseldorf",
+	\license:		"GPL-3.0",
 )
